@@ -4,6 +4,7 @@ out
 *.log*
 *.DS_Store
 /resources/Final2x-core/
+/resources/zimage-ncnn-vulkan
 /outputs/
 /.idea
 /coverage/
