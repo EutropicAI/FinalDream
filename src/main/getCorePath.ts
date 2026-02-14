@@ -1,34 +1,20 @@
-import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { app } from 'electron'
 
-const FINAL2X_CORE_NAME = 'Final2x-core'
-const FINAL2X_CORE_PATH = 'Final2x-core/Final2x-core'
+const ZIMAGE_CORE_PATH = 'FinalDream-core/zimage-ncnn-vulkan'
 
 /**
- * 获取 Final2x-core 的路径
- * dev模式下，存放在项目根目录下的 resources
- * 在 electron-builder 中配置 extraResources，ASAR 打包时将它放入 app.asar 同级目录
- * @returns {string} Final2x-core 的路径
+ * Get ZImage core path
+ * @returns {string} Path to zimage-ncnn-vulkan executable
  */
 export function getCorePath(): string {
-  if (!checkPipPackage()) {
-    if (process.env.NODE_ENV === 'development') {
-      return path.join(app.getAppPath(), 'resources', FINAL2X_CORE_PATH)
-    }
-    else {
-      return path.join(app.getAppPath(), '..', FINAL2X_CORE_PATH)
-    }
+  if (process.env.NODE_ENV === 'development') {
+    return path.join(app.getAppPath(), 'resources', ZIMAGE_CORE_PATH)
   }
   else {
-    return FINAL2X_CORE_NAME
+    return path.join(app.getAppPath(), '..', ZIMAGE_CORE_PATH)
   }
 }
 
-export function checkPipPackage(): boolean {
-  const command = `${FINAL2X_CORE_NAME} -h`
-
-  const result = spawnSync(command, { shell: true })
-
-  return result.status === 0
-}
+// Export a dummy checkPipPackage to satisfy test import if needed, or remove the test.
+// I will remove the test as it's not relevant.

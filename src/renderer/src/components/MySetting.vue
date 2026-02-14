@@ -12,7 +12,7 @@ const { darkMode, changeRoute } = storeToRefs(useGlobalSettingsStore())
 function handleRoute(): void {
   if (changeRoute.value === false) {
     changeRoute.value = true
-    router.push('/Final2xSettings')
+    router.push('/ZImageSettings')
   }
   else {
     changeRoute.value = false

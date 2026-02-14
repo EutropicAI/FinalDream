@@ -1,14 +1,24 @@
 <script lang="ts" setup>
 import MyExternalLink from './MyExternalLink.vue'
-import MySetting from './MySetting.vue'
+
 </script>
 
 <template>
   <div class="position">
     <n-divider class="n-divider" />
     <n-space class="n-space" justify="space-between">
-      <MySetting />
-      <MyExternalLink />
+      <n-space>
+        <n-button quaternary circle @click="$router.push('/ZImageGenerate')" :title="$t('BottomNavigation.generator')">
+           {{ $t('BottomNavigation.generator') }}
+        </n-button>
+      </n-space>
+      
+      <n-space>
+        <n-button quaternary circle @click="$router.push('/ZImageSettings')" :title="$t('BottomNavigation.settings')">
+            {{ $t('BottomNavigation.settings') }}
+        </n-button>
+        <MyExternalLink />
+      </n-space>
     </n-space>
   </div>
 </template>

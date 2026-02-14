@@ -1,8 +1,8 @@
-import type { LogInst } from 'naive-ui'
 import type { Ref } from 'vue'
-import type { NaiveDarkModeType } from '../components/NaiveDarkMode.vue'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+
+export type NaiveDarkModeType = 'system' | 'light' | 'dark' | undefined
 
 export const useGlobalSettingsStore = defineStore(
   'GlobalSettings',
@@ -15,12 +15,6 @@ export const useGlobalSettingsStore = defineStore(
 
     const langsNum = ref(114514)
 
-    const ProgressPercentage = ref(0)
-    const CommandLOG = ref('')
-    const logInstRef = ref<LogInst | null>(null)
-    const StartCommandLock = ref(false)
-    const SrSuccess = ref(false)
-
     const openOutputFolder = ref(true)
 
     return {
@@ -29,11 +23,6 @@ export const useGlobalSettingsStore = defineStore(
       naiveTheme,
       changeRoute,
       langsNum,
-      ProgressPercentage,
-      CommandLOG,
-      StartCommandLock,
-      SrSuccess,
-      logInstRef,
       openOutputFolder,
     }
   },

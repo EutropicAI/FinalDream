@@ -6,7 +6,6 @@ import { useI18n } from 'vue-i18n'
 import { RouterView } from 'vue-router'
 import BottomNavigation from './components/bottomNavigation.vue'
 import MyDarkMode from './components/MyDarkMode.vue'
-import MyProgress from './components/MyProgress.vue'
 import TrafficLightsButtons from './components/TrafficLightsButtons.vue'
 import { useGlobalSettingsStore } from './store/globalSettingsStore'
 import { getLanguage } from './utils'
@@ -46,7 +45,6 @@ const themeOverrides = {
         <div class="background">
           <MyDarkMode />
           <TrafficLightsButtons />
-          <MyProgress />
           <div class="view">
             <RouterView v-slot="{ Component }">
               <transition mode="out-in" name="custom-fade">

@@ -3,6 +3,7 @@
  */
 export enum IpcChannelInvoke {
   OPEN_DIRECTORY_DIALOG = 'ipc:open-directory-dialog',
+  ZIMAGE_GET_MODELS = 'ipc:invoke:zimage-get-models',
 }
 
 /**
@@ -14,6 +15,7 @@ export enum IpcChannelSend {
   MINIMIZE = 'ipc:send:minimize',
   MAXIMIZE = 'ipc:send:maximize',
   CLOSE = 'ipc:send:close',
+  ZIMAGE_EXECUTE_COMMAND = 'ipc:send:zimage-execute-command',
 }
 
 /**

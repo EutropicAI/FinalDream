@@ -5,7 +5,8 @@ import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell, Tray } from 'ele
 import appIcon from '../../resources/icon.png?asset'
 import trayIcon from '../../resources/tray.png?asset'
 import { openDirectory } from './openDirectory'
-import { killCommand, runCommand } from './runCommand'
+// import { killCommand, runCommand } from './runCommand'
+import { getZImageModels, runZImageCommand, killZImageProcess } from './zimage'
 
 function createWindow(): void {
   // Create the browser window.
@@ -31,11 +32,13 @@ function createWindow(): void {
   }
 
   // Ipc events
-  ipcMain.on(IpcChannelSend.EXECUTE_COMMAND, runCommand)
+  // ipcMain.on(IpcChannelSend.EXECUTE_COMMAND, runCommand)
+  // ipcMain.on(IpcChannelSend.KILL_COMMAND, killCommand)
 
-  ipcMain.on(IpcChannelSend.KILL_COMMAND, killCommand)
+  ipcMain.on(IpcChannelSend.ZIMAGE_EXECUTE_COMMAND, runZImageCommand)
 
   ipcMain.handle(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, openDirectory)
+  ipcMain.handle(IpcChannelInvoke.ZIMAGE_GET_MODELS, getZImageModels)
 
   ipcMain.on(IpcChannelSend.MINIMIZE, () => {
     mainWindow.minimize()
@@ -108,7 +111,7 @@ function setTray(): void {
     },
   ])
 
-  tray.setToolTip('Final2x')
+  tray.setToolTip('FinalDream')
   tray.setContextMenu(contextMenu)
 }
 
@@ -120,7 +123,7 @@ app.disableHardwareAcceleration()
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.final2x.app')
+  electronApp.setAppUserModelId('com.finaldream.app')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -161,6 +164,6 @@ app.on('before-quit', async (event) => {
   console.log('Killing child process before quitting...')
   event.preventDefault()
   isQuitting = true
-  await killCommand()
+  await killZImageProcess()
   app.quit()
 })

@@ -1,23 +1,21 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Final2xHome from '../views/Final2xHome.vue'
-import Final2xSettings from '../views/Final2xSettings.vue'
 
 export default createRouter({
   history: createWebHashHistory(),
   routes: [
     {
       path: '/',
-      redirect: '/Final2xHome',
+      redirect: '/ZImageGenerate',
     },
     {
-      path: '/Final2xHome',
-      name: 'Final2xHome',
-      component: Final2xHome,
+      path: '/ZImageGenerate',
+      name: 'ZImageGenerate',
+      component: () => import('../views/ZImageGenerate.vue'),
     },
     {
-      path: '/Final2xSettings',
-      name: 'Final2xSettings',
-      component: Final2xSettings,
+      path: '/ZImageSettings',
+      name: 'ZImageSettings',
+      component: () => import('../views/ZImageSettings.vue'),
     },
   ],
 })
