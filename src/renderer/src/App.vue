@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { NConfigProvider, NDialogProvider, NGlobalStyle, NNotificationProvider } from 'naive-ui'
+import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, NNotificationProvider } from 'naive-ui'
 import { RouterView } from 'vue-router'
 import BottomNavigation from './components/bottomNavigation.vue'
 
@@ -17,21 +17,23 @@ const themeOverrides = {
 <template>
   <NConfigProvider :theme-overrides="themeOverrides">
     <NGlobalStyle />
-    <NNotificationProvider class="n-config-provider" placement="top">
-      <NDialogProvider>
-        <div class="background">
-          <div class="view">
-            <RouterView v-slot="{ Component }">
-              <transition mode="out-in" name="custom-fade">
-                <keep-alive>
-                  <component :is="Component" />
-                </keep-alive>
-              </transition>
-            </RouterView>
+    <NNotificationProvider placement="top">
+      <NMessageProvider>
+        <NDialogProvider>
+          <div class="background">
+            <div class="view">
+              <RouterView v-slot="{ Component }">
+                <transition mode="out-in" name="custom-fade">
+                  <keep-alive>
+                    <component :is="Component" />
+                  </keep-alive>
+                </transition>
+              </RouterView>
+            </div>
+            <BottomNavigation />
           </div>
-          <BottomNavigation />
-        </div>
-      </NDialogProvider>
+        </NDialogProvider>
+      </NMessageProvider>
     </NNotificationProvider>
   </NConfigProvider>
 </template>

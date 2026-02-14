@@ -11,12 +11,12 @@ import { getZImageModels, killZImageProcess, runZImageCommand } from './zimage'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 670,
-    height: 470,
-    maxWidth: 870,
-    minWidth: 670,
-    maxHeight: 670,
-    minHeight: 470,
+    width: 800,
+    height: 600,
+    maxWidth: 1920,
+    minWidth: 800,
+    maxHeight: 1080,
+    minHeight: 600,
     frame: true,
     show: false,
     autoHideMenuBar: true,

@@ -42,7 +42,7 @@ export interface ZImageOptions {
   steps?: number | 'auto'
   seed?: number | 'rand'
   model?: string
-  gpuId?: number
+  gpuId?: number | 'auto'
 }
 
 export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptions): Promise<void> {
@@ -94,7 +94,7 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
   }
 
   // -g gpu-id
-  if (options.gpuId !== undefined) {
+  if (options.gpuId && options.gpuId !== 'auto') {
     args.push('-g', `${options.gpuId}`)
   }
 
@@ -113,8 +113,8 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
   // This allows the executable to find model files correctly
   const executableDir = join(executablePath, '..')
 
-  zImageChild = spawn(executablePath, args, { 
-    cwd: executableDir
+  zImageChild = spawn(executablePath, args, {
+    cwd: executableDir,
   })
 
   zImageChild.stdout.on('data', (data) => {
