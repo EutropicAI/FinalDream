@@ -73,7 +73,7 @@ const gpuIdStr = computed({
 <template>
   <div class="zimage-settings-container">
     <NCard>
-      <NForm label-placement="left" label-width="120">
+      <NForm label-placement="left" label-width="160">
         <NFormItem :label="$t('ZImageSettings.modelLabel')">
           <NSelect
             v-model:value="selectedModel"
