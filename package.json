@@ -1,10 +1,10 @@
 {
-  "name": "Final2x",
-  "productName": "Final2x",
-  "version": "4.0.0",
-  "description": "A cross-platform image super-resolution tool.",
+  "name": "finaldream",
+  "productName": "FinalDream",
+  "version": "0.0.1",
+  "description": "One last step for your dreams",
   "author": "Tohrusky",
-  "homepage": "https://github.com/EutropicAI/Final2x",
+  "homepage": "https://github.com/EutropicAI/FinalDream",
   "main": "./out/main/index.js",
   "engines": {
     "node": ">=18",

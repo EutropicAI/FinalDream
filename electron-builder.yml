@@ -1,5 +1,5 @@
-appId: com.final2x.app
-productName: Final2x
+appId: com.finaldream.app
+productName: FinalDream
 directories:
   buildResources: build
 
@@ -12,7 +12,7 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-  - '!resources/Final2x-core/**'
+  - '!resources/FinalDream-core/**'
 
 asarUnpack:
   - resources/*.png
@@ -20,13 +20,13 @@ asarUnpack:
   - resources/*.ico
 
 extraResources:
-  - from: resources/Final2x-core
-    to: Final2x-core
+  - from: resources/FinalDream-core
+    to: FinalDream-core
 
 afterSign: build/notarize.js
 
 win:
-  executableName: Final2x
+  executableName: FinalDream
 
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
