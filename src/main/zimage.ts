@@ -1,23 +1,17 @@
+import type { ZImageOptions } from '@shared/type/zimage'
 import type { IpcMainEvent } from 'electron'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { readdir } from 'node:fs/promises'
 import { join, normalize } from 'node:path'
 import { IpcChannelOn } from '@shared/const/ipc'
+
 import { getCorePath } from './getCorePath'
 
 let zImageChild: ChildProcessWithoutNullStreams | null = null
 
 export async function getZImageModels(): Promise<string[]> {
   const corePath = getCorePath()
-  // Assumes models are in a 'models' subdirectory relative to the core executable
-  // Based on user request: "模型放在zimage-ncnn-vulkan/models"
-  // And core path logic likely points to the executable or the dir containing it.
-  // We need to double check getCorePath implementation or assume check two levels.
-  // Actually, getCorePath in runCommand.ts returns the executable path.
-  // So we need to dirname it.
-  // getCorePath returns path to executable: .../FinalDream-core/zimage-ncnn-vulkan
-  // models are now in .../models (sibling to FinalDream-core)
   const executableDir = join(corePath, '..') // .../FinalDream-core
   const modelsDir = join(executableDir, '..', 'models') // .../models
 
@@ -31,18 +25,6 @@ export async function getZImageModels(): Promise<string[]> {
     console.error('Failed to read models directory:', error)
     return []
   }
-}
-
-export interface ZImageOptions {
-  prompt: string
-  negativePrompt?: string
-  output?: string
-  width?: number
-  height?: number
-  steps?: number | 'auto'
-  seed?: number | 'rand'
-  model?: string
-  gpuId?: number | 'auto'
 }
 
 export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptions): Promise<void> {
@@ -80,14 +62,7 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
   }
 
   // -m model-path
-  // User said models are in zimage-ncnn-vulkan/models
-  // And the README says "Download ... to the same directory as the executable file"
-  // But typically -m takes a path.
-  // If we pass just the model name, does it look in current dir?
-  // Let's assume we pass the full path or relative path to the executable.
   if (options.model) {
-    // We assume the model is a folder name in the models directory
-    // Models are in ../models relative to the executable's directory
     const executableDir = join(executablePath, '..')
     const modelPath = join(executableDir, '..', 'models', options.model)
     args.push('-m', normalize(modelPath))

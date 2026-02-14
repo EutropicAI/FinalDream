@@ -5,7 +5,6 @@ import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell, Tray } from 'ele
 import appIcon from '../../resources/icon.png?asset'
 import trayIcon from '../../resources/tray.png?asset'
 import { openDirectory } from './openDirectory'
-// import { killCommand, runCommand } from './runCommand'
 import { getZImageModels, killZImageProcess, runZImageCommand } from './zimage'
 
 function createWindow(): void {
@@ -33,9 +32,6 @@ function createWindow(): void {
   }
 
   // Ipc events
-  // ipcMain.on(IpcChannelSend.EXECUTE_COMMAND, runCommand)
-  // ipcMain.on(IpcChannelSend.KILL_COMMAND, killCommand)
-
   ipcMain.on(IpcChannelSend.ZIMAGE_EXECUTE_COMMAND, runZImageCommand)
 
   ipcMain.handle(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, openDirectory)

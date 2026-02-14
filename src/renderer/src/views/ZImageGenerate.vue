@@ -1,16 +1,5 @@
 <script lang="ts" setup>
-import {
-  NButton,
-  NCard,
-  NDrawer,
-  NImage,
-  NImageGroup,
-  NInput,
-  NLog,
-  NSpace,
-  NSpin,
-  useMessage,
-} from 'naive-ui'
+import { NButton, NCard, NDrawer, NImage, NImageGroup, NInput, NLog, NSpace, NSpin, useMessage } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 import { useZImageStore } from '../store/zimageStore'
@@ -26,7 +15,11 @@ const showLogDrawer = ref(false)
 function handleGenerate(): void {
   if (!prompt.value)
     return
-  startGeneration()
+
+  const result = startGeneration()
+  if (!result.success && result.message) {
+    message.error(result.message)
+  }
 }
 
 async function copyImagePath(): Promise<void> {
@@ -89,7 +82,11 @@ async function copyImagePath(): Promise<void> {
                   class="generated-image"
                 />
                 <div class="image-actions">
-                  <NButton type="primary" size="small" @click="copyImagePath">
+                  <NButton
+                    type="primary"
+                    size="small"
+                    @click="copyImagePath"
+                  >
                     Copy Path
                   </NButton>
                 </div>
@@ -103,8 +100,15 @@ async function copyImagePath(): Promise<void> {
       </NCard>
     </NSpace>
 
-    <NDrawer v-model:show="showLogDrawer" :width="600" placement="right">
-      <NCard :title="$t('ZImageGenerate.logsTitle')" style="height: 100%">
+    <NDrawer
+      v-model:show="showLogDrawer"
+      :width="600"
+      placement="right"
+    >
+      <NCard
+        :title="$t('ZImageGenerate.logsTitle')"
+        style="height: 100%"
+      >
         <NLog :log="logs" :rows="30" />
       </NCard>
     </NDrawer>

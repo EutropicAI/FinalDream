@@ -1,3 +1,4 @@
+import type { ZImageOptions } from '@shared/type/zimage'
 import { IpcChannelInvoke, IpcChannelOn, IpcChannelSend } from '@shared/const/ipc'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -48,15 +49,23 @@ export const useZImageStore = defineStore(
       }
     }
 
-    const startGeneration = (): void => {
+    const startGeneration = (): { success: boolean, message?: string } => {
+      // Validate output folder is set
+      if (!outputFolder.value) {
+        return {
+          success: false,
+          message: 'Please set an output folder in Settings before generating images.',
+        }
+      }
+
       isGenerating.value = true
       logs.value = ''
       generatedImagePath.value = '' // Clear previous image
 
-      const options = {
+      const options: ZImageOptions = {
         prompt: prompt.value,
         negativePrompt: negativePrompt.value,
-        output: outputFolder.value ? `${outputFolder.value}/out-${Date.now()}.png` : `out-${Date.now()}.png`, // logic to be improved regarding default path
+        output: `${outputFolder.value}/out-${Date.now()}.png`,
         width: width.value,
         height: height.value,
         steps: steps.value,
@@ -83,9 +92,17 @@ export const useZImageStore = defineStore(
           // how do we know the file name if we used a timestamp?
           // we constructed it above in `options.output`
           // So we set generatedImagePath to that.
-          // However, accessing local files in browser might be restricted.
-          // We might need a `file://` protocol or similar.
-          generatedImagePath.value = options.output
+          // Extract output path from line that shows "output-path = ..."
+          const outputMatch = logs.value.match(/output-path = (.+)/)
+          if (outputMatch && outputMatch[1]) {
+            generatedImagePath.value = outputMatch[1].trim()
+          }
+          else {
+            // If output path not found in logs, fall back to the initially constructed path
+            // or indicate an error if extraction was expected.
+            generatedImagePath.value = options.output || ''
+            logs.value += '\nWarning: Could not extract output path from logs. Using default generated path.'
+          }
         }
         else {
           logs.value += `\nProcess exited with code ${code}`
@@ -97,6 +114,8 @@ export const useZImageStore = defineStore(
       ipcRenderer.on(IpcChannelOn.COMMAND_CLOSE, onClose)
 
       ipcRenderer.send(IpcChannelSend.ZIMAGE_EXECUTE_COMMAND, options)
+
+      return { success: true }
     }
 
     return {
