@@ -2,7 +2,12 @@
 import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, NNotificationProvider } from 'naive-ui'
 import { provide, ref } from 'vue'
 import { RouterView } from 'vue-router'
+import hljs from 'highlight.js/lib/core'
+import log from 'highlight.js/lib/languages/plaintext'
 import Sidebar from './components/Sidebar.vue'
+
+// Register log language for NLog component
+hljs.registerLanguage('log', log)
 
 const themeOverrides = {
   Select: {
@@ -23,7 +28,10 @@ function handleToggleLogs(): void {
 </script>
 
 <template>
-  <NConfigProvider :theme-overrides="themeOverrides">
+  <NConfigProvider
+    :theme-overrides="themeOverrides"
+    :hljs="hljs"
+  >
     <NGlobalStyle />
     <NNotificationProvider placement="top">
       <NMessageProvider>

@@ -61,7 +61,9 @@ watch(logs, async () => {
       :height="400"
       placement="top"
     >
-      <NLog ref="logRef" :log="logs" :rows="25" language="log" />
+      <div class="log-container">
+        <NLog ref="logRef" :log="logs" :rows="25" language="log" />
+      </div>
     </NDrawer>
   </div>
 </template>
@@ -133,5 +135,14 @@ watch(logs, async () => {
   text-align: center;
   color: #666;
   font-size: 14px;
+}
+
+.log-container {
+  height: 100%;
+  overflow: hidden;
+}
+
+.log-container :deep(.n-log) {
+  height: 100%;
 }
 </style>
