@@ -77,7 +77,7 @@ async function copyImagePath(): Promise<void> {
             <NImageGroup v-if="generatedImagePath">
               <div class="image-wrapper">
                 <NImage
-                  :src="`file://${generatedImagePath}`"
+                  :src="generatedImagePath"
                   object-fit="contain"
                   class="generated-image"
                 />
@@ -102,8 +102,8 @@ async function copyImagePath(): Promise<void> {
 
     <NDrawer
       v-model:show="showLogDrawer"
-      :width="600"
-      placement="right"
+      :height="400"
+      placement="top"
     >
       <NCard
         :title="$t('ZImageGenerate.logsTitle')"
@@ -126,18 +126,28 @@ async function copyImagePath(): Promise<void> {
   justify-content: center;
   align-items: center;
   min-height: 400px;
+  width: 100%;
   background-color: rgba(0, 0, 0, 0.02);
   border-radius: 4px;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .image-wrapper {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 100%;
+  width: 100%;
 }
 
 .generated-image {
   max-width: 100%;
+  max-height: 600px;
+  width: auto;
+  height: auto;
   border-radius: 4px;
+  object-fit: contain;
 }
 
 .image-actions {

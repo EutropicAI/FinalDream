@@ -88,21 +88,8 @@ export const useZImageStore = defineStore(
         ipcRenderer.removeAllListeners(IpcChannelOn.COMMAND_CLOSE)
 
         if (code === 0) {
-          // success
-          // how do we know the file name if we used a timestamp?
-          // we constructed it above in `options.output`
-          // So we set generatedImagePath to that.
-          // Extract output path from line that shows "output-path = ..."
-          const outputMatch = logs.value.match(/output-path = (.+)/)
-          if (outputMatch && outputMatch[1]) {
-            generatedImagePath.value = outputMatch[1].trim()
-          }
-          else {
-            // If output path not found in logs, fall back to the initially constructed path
-            // or indicate an error if extraction was expected.
-            generatedImagePath.value = options.output || ''
-            logs.value += '\nWarning: Could not extract output path from logs. Using default generated path.'
-          }
+          // Success - use the original output path we constructed
+          generatedImagePath.value = options.output || ''
         }
         else {
           logs.value += `\nProcess exited with code ${code}`
