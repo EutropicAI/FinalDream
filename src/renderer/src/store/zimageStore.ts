@@ -21,7 +21,7 @@ export const useZImageStore = defineStore(
     const logs = ref('')
     const generatedImagePath = ref('')
 
-    const fetchModels = async () => {
+    const fetchModels = async (): Promise<void> => {
       try {
         const models = await ipcRenderer.invoke(IpcChannelInvoke.ZIMAGE_GET_MODELS)
         availableModels.value = models
@@ -29,23 +29,25 @@ export const useZImageStore = defineStore(
           // Keep default if exists, else pick first
           if (models.includes('z-image-turbo')) {
             selectedModel.value = 'z-image-turbo'
-          } else {
+          }
+          else {
             selectedModel.value = models[0]
           }
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Failed to fetch models:', error)
       }
     }
 
-    const selectOutputFolder = async () => {
+    const selectOutputFolder = async (): Promise<void> => {
       const path = await ipcRenderer.invoke(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG)
       if (path) {
         outputFolder.value = path
       }
     }
 
-    const startGeneration = () => {
+    const startGeneration = (): void => {
       isGenerating.value = true
       logs.value = ''
       generatedImagePath.value = '' // Clear previous image
@@ -58,13 +60,13 @@ export const useZImageStore = defineStore(
         height: height.value,
         steps: steps.value,
         seed: seed.value,
-        model: selectedModel.value
+        model: selectedModel.value,
       }
 
       // We need to track the output path to display it later
       // If outputFolder is empty, where does it go? Run path.
       // Let's enforce output folder or handle it.
-      // For now, let's assume if outputFolder is set we use it. 
+      // For now, let's assume if outputFolder is set we use it.
       // We will store the full expected path to generatedImagePath.
       // Note: The backend zimage.ts handles relative paths if we don't provide absolute.
       // But for display we need absolute or a way to read it.
@@ -74,13 +76,13 @@ export const useZImageStore = defineStore(
       // For now, just pass what we have.
 
       // Listeners
-      const onStdout = (_event: any, data: string) => {
+      const onStdout = (_event: any, data: string): void => {
         logs.value += data
       }
-      const onStderr = (_event: any, data: string) => {
+      const onStderr = (_event: any, data: string): void => {
         logs.value += data
       }
-      const onClose = (_event: any, code: number) => {
+      const onClose = (_event: any, code: number): void => {
         isGenerating.value = false
         ipcRenderer.removeAllListeners(IpcChannelOn.COMMAND_STDOUT)
         ipcRenderer.removeAllListeners(IpcChannelOn.COMMAND_STDERR)
@@ -94,7 +96,8 @@ export const useZImageStore = defineStore(
           // However, accessing local files in browser might be restricted.
           // We might need a `file://` protocol or similar.
           generatedImagePath.value = options.output
-        } else {
+        }
+        else {
           logs.value += `\nProcess exited with code ${code}`
         }
       }
@@ -121,7 +124,7 @@ export const useZImageStore = defineStore(
       generatedImagePath,
       fetchModels,
       selectOutputFolder,
-      startGeneration
+      startGeneration,
     }
   },
   {

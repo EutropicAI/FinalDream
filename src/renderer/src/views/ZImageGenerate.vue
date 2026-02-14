@@ -1,60 +1,70 @@
 <script lang="ts" setup>
+import { NButton, NCard, NImage, NInput, NLog, NSpace, NSpin } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import { useZImageStore } from '../store/zimageStore'
-import { NButton, NInput, NSpace, NImage, NCard, NSpin, NLog } from 'naive-ui'
 
 const zImageStore = useZImageStore()
-const { prompt, negativePrompt, isGenerating, logs, generatedImagePath } = storeToRefs(zImageStore)
+const { prompt, negativePrompt, isGenerating, logs, generatedImagePath }
+  = storeToRefs(zImageStore)
 const { startGeneration } = zImageStore
 
-const handleGenerate = () => {
-  if (!prompt.value) return
+function handleGenerate(): void {
+  if (!prompt.value)
+    return
   startGeneration()
 }
 </script>
 
 <template>
   <div class="zimage-generate-container">
-    <n-space vertical size="large">
-      <n-card title="Z-Image Generation">
-        <n-space vertical>
-          <n-input
+    <NSpace vertical size="large">
+      <NCard title="Z-Image Generation">
+        <NSpace vertical>
+          <NInput
             v-model:value="prompt"
             type="textarea"
             :placeholder="$t('ZImageGenerate.promptPlaceholder')"
             :autosize="{ minRows: 3, maxRows: 6 }"
           />
-          <n-input
+          <NInput
             v-model:value="negativePrompt"
             type="textarea"
             :placeholder="$t('ZImageGenerate.negativePromptPlaceholder')"
             :autosize="{ minRows: 2, maxRows: 4 }"
           />
-          <n-button type="primary" :loading="isGenerating" @click="handleGenerate" block>
-            {{ $t('ZImageGenerate.generateButton') }}
-          </n-button>
-        </n-space>
-      </n-card>
+          <NButton
+            type="primary"
+            :loading="isGenerating"
+            block
+            @click="handleGenerate"
+          >
+            {{ $t("ZImageGenerate.generateButton") }}
+          </NButton>
+        </NSpace>
+      </NCard>
 
-      <n-card v-if="generatedImagePath || isGenerating" :title="$t('ZImageGenerate.resultTitle')">
+      <NCard
+        v-if="generatedImagePath || isGenerating"
+        :title="$t('ZImageGenerate.resultTitle')"
+      >
         <div class="image-container">
-            <n-spin :show="isGenerating">
-                <n-image
-                    v-if="generatedImagePath"
-                    :src="generatedImagePath"
-                    object-fit="contain"
-                />
-                <div v-else class="placeholder">
-                    Waiting for generation...
-                </div>
-            </n-spin>
+          <NSpin :show="isGenerating">
+            <NImage
+              v-if="generatedImagePath"
+              :src="generatedImagePath"
+              object-fit="contain"
+            />
+            <div v-else class="placeholder">
+              Waiting for generation...
+            </div>
+          </NSpin>
         </div>
-      </n-card>
+      </NCard>
 
-      <n-card :title="$t('ZImageGenerate.logsTitle')" size="small">
-        <n-log :log="logs" :rows="10" />
-      </n-card>
-    </n-space>
+      <NCard :title="$t('ZImageGenerate.logsTitle')" size="small">
+        <NLog :log="logs" :rows="10" />
+      </NCard>
+    </NSpace>
   </div>
 </template>
 
@@ -69,12 +79,12 @@ const handleGenerate = () => {
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  background-color: rgba(0,0,0,0.05);
+  background-color: rgba(0, 0, 0, 0.05);
   border-radius: 4px;
 }
 
 .placeholder {
-    padding: 20px;
-    color: #888;
+  padding: 20px;
+  color: #888;
 }
 </style>

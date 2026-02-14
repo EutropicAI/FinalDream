@@ -4,7 +4,7 @@ export const en = {
     negativePromptPlaceholder: 'Negative Prompt (Optional)...',
     generateButton: 'Generate Image',
     resultTitle: 'Result',
-    logsTitle: 'Logs'
+    logsTitle: 'Logs',
   },
   ZImageSettings: {
     modelLabel: 'Model',
@@ -13,11 +13,11 @@ export const en = {
     stepsLabel: 'Steps',
     seedLabel: 'Random Seed',
     browseButton: 'Browse',
-    unknownSelection: 'Unknown Selection'
+    unknownSelection: 'Unknown Selection',
   },
   BottomNavigation: {
     home: 'HOME',
     generator: 'GENERATE',
-    settings: 'SETTINGS'
-  }
+    settings: 'SETTINGS',
+  },
 }

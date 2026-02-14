@@ -1,9 +1,9 @@
-import { IpcChannelOn } from '@shared/const/ipc'
 import type { IpcMainEvent } from 'electron'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
+import { IpcChannelOn } from '@shared/const/ipc'
 import { getCorePath } from './getCorePath'
 
 let zImageChild: ChildProcessWithoutNullStreams | null = null
@@ -103,7 +103,8 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
   if (zImageChild) {
     try {
       zImageChild.kill()
-    } catch (e) { }
+    }
+    catch {}
   }
 
   zImageChild = spawn(commandString, { shell: true })

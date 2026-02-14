@@ -1,18 +1,27 @@
 <script lang="ts" setup>
+import {
+  NButton,
+  NCard,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSelect,
+  NSpace,
+} from 'naive-ui'
 import { storeToRefs } from 'pinia'
+import { computed, onMounted } from 'vue'
 import { useZImageStore } from '../store/zimageStore'
-import { NForm, NFormItem, NInput, NInputNumber, NSelect, NButton, NSpace, NCard } from 'naive-ui'
-import { onMounted, computed } from 'vue'
 
 const zImageStore = useZImageStore()
-const { 
-  selectedModel, 
-  availableModels, 
-  width, 
-  height, 
-  steps, 
+const {
+  selectedModel,
+  availableModels,
+  width,
+  height,
+  steps,
   seed,
-  outputFolder 
+  outputFolder,
 } = storeToRefs(zImageStore)
 const { fetchModels, selectOutputFolder } = zImageStore
 
@@ -29,11 +38,12 @@ const stepsStr = computed({
   set: (val: string) => {
     if (val === 'auto') {
       steps.value = 'auto'
-    } else {
-      const num = parseInt(val, 10)
-      steps.value = isNaN(num) ? 'auto' : num
     }
-  }
+    else {
+      const num = Number.parseInt(val, 10)
+      steps.value = Number.isNaN(num) ? 'auto' : num
+    }
+  },
 })
 
 const seedStr = computed({
@@ -41,54 +51,71 @@ const seedStr = computed({
   set: (val: string) => {
     if (val === 'rand') {
       seed.value = 'rand'
-    } else {
-      const num = parseInt(val, 10)
-      seed.value = isNaN(num) ? 'rand' : num
     }
-  }
+    else {
+      const num = Number.parseInt(val, 10)
+      seed.value = Number.isNaN(num) ? 'rand' : num
+    }
+  },
 })
 </script>
 
 <template>
   <div class="zimage-settings-container">
-    <n-card title="Z-Image Settings">
-      <n-form label-placement="left" label-width="120">
-        
-        <n-form-item :label="$t('ZImageSettings.modelLabel')">
-          <n-select v-model:value="selectedModel" :options="computedModelOptions" placeholder="Select Model" />
-        </n-form-item>
+    <NCard title="Z-Image Settings">
+      <NForm label-placement="left" label-width="120">
+        <NFormItem :label="$t('ZImageSettings.modelLabel')">
+          <NSelect
+            v-model:value="selectedModel"
+            :options="computedModelOptions"
+            placeholder="Select Model"
+          />
+        </NFormItem>
 
-        <n-form-item :label="$t('ZImageSettings.outputFolderLabel')">
-          <n-space>
-             <n-input v-model:value="outputFolder" placeholder="Default Output Folder" readonly />
-             <n-button @click="selectOutputFolder">{{ $t('ZImageSettings.browseButton') }}</n-button>
-          </n-space>
-        </n-form-item>
+        <NFormItem :label="$t('ZImageSettings.outputFolderLabel')">
+          <NSpace>
+            <NInput
+              v-model:value="outputFolder"
+              placeholder="Default Output Folder"
+              readonly
+            />
+            <NButton @click="selectOutputFolder">
+              {{ $t("ZImageSettings.browseButton") }}
+            </NButton>
+          </NSpace>
+        </NFormItem>
 
-        <n-form-item :label="$t('ZImageSettings.imageSizeLabel')">
-           <n-space>
-              <n-input-number v-model:value="width" placeholder="Width" />
-              <div style="line-height: 34px">x</div>
-              <n-input-number v-model:value="height" placeholder="Height" />
-           </n-space>
-        </n-form-item>
+        <NFormItem :label="$t('ZImageSettings.imageSizeLabel')">
+          <NSpace>
+            <NInputNumber v-model:value="width" placeholder="Width" />
+            <div style="line-height: 34px">
+              x
+            </div>
+            <NInputNumber v-model:value="height" placeholder="Height" />
+          </NSpace>
+        </NFormItem>
 
-        <n-form-item :label="$t('ZImageSettings.stepsLabel')">
-           <!-- Steps can be 'auto' or number. NInputNumber only takes number. Using NInput for flexibility or custom component -->
-           <!-- For simplicity, let's allow number, and if 0 or empty use auto logic in store? -->
-           <!-- Store defines steps as number | 'auto'. Let's use a specialized input or just 20 as default? -->
-           <!-- Let's iterate: make it an input that parses to number, or text 'auto' -->
-           <n-input v-model:value="stepsStr" placeholder="Steps (e.g. 20 or auto)" /> 
-           <!-- Type check might fail if v-model expects number | 'auto' and input gives string. -->
-           <!-- We might need a converter. -->
-        </n-form-item>
+        <NFormItem :label="$t('ZImageSettings.stepsLabel')">
+          <!-- Steps can be 'auto' or number. NInputNumber only takes number. Using NInput for flexibility or custom component -->
+          <!-- For simplicity, let's allow number, and if 0 or empty use auto logic in store? -->
+          <!-- Store defines steps as number | 'auto'. Let's use a specialized input or just 20 as default? -->
+          <!-- Let's iterate: make it an input that parses to number, or text 'auto' -->
+          <NInput
+            v-model:value="stepsStr"
+            placeholder="Steps (e.g. 20 or auto)"
+          />
+          <!-- Type check might fail if v-model expects number | 'auto' and input gives string. -->
+          <!-- We might need a converter. -->
+        </NFormItem>
 
-        <n-form-item :label="$t('ZImageSettings.seedLabel')">
-            <n-input v-model:value="seedStr" placeholder="Seed (e.g. 12345 or rand)" />
-        </n-form-item>
-
-      </n-form>
-    </n-card>
+        <NFormItem :label="$t('ZImageSettings.seedLabel')">
+          <NInput
+            v-model:value="seedStr"
+            placeholder="Seed (e.g. 12345 or rand)"
+          />
+        </NFormItem>
+      </NForm>
+    </NCard>
   </div>
 </template>
 

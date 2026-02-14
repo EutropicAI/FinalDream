@@ -6,7 +6,7 @@ import appIcon from '../../resources/icon.png?asset'
 import trayIcon from '../../resources/tray.png?asset'
 import { openDirectory } from './openDirectory'
 // import { killCommand, runCommand } from './runCommand'
-import { getZImageModels, runZImageCommand, killZImageProcess } from './zimage'
+import { getZImageModels, killZImageProcess, runZImageCommand } from './zimage'
 
 function createWindow(): void {
   // Create the browser window.

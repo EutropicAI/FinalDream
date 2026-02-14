@@ -4,7 +4,7 @@ export const zh = {
     negativePromptPlaceholder: '反向提示词 (可选)...',
     generateButton: '生成图片',
     resultTitle: '结果',
-    logsTitle: '日志'
+    logsTitle: '日志',
   },
   ZImageSettings: {
     modelLabel: '模型',
@@ -13,11 +13,11 @@ export const zh = {
     stepsLabel: '步数',
     seedLabel: '随机种子',
     browseButton: '浏览',
-    unknownSelection: '未选择'
+    unknownSelection: '未选择',
   },
   BottomNavigation: {
     home: '首页',
     generator: '生成',
-    settings: '设置'
-  }
+    settings: '设置',
+  },
 }

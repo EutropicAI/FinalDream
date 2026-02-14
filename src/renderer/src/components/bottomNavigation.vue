@@ -8,8 +8,8 @@
         <n-button
           quaternary
           circle
-          @click="$router.push('/ZImageGenerate')"
           :title="$t('BottomNavigation.generator')"
+          @click="$router.push('/ZImageGenerate')"
         >
           {{ $t("BottomNavigation.generator") }}
         </n-button>
@@ -19,8 +19,8 @@
         <n-button
           quaternary
           circle
-          @click="$router.push('/ZImageSettings')"
           :title="$t('BottomNavigation.settings')"
+          @click="$router.push('/ZImageSettings')"
         >
           {{ $t("BottomNavigation.settings") }}
         </n-button>

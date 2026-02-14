@@ -10,12 +10,12 @@ export default createRouter({
     {
       path: '/ZImageGenerate',
       name: 'ZImageGenerate',
-      component: () => import('../views/ZImageGenerate.vue'),
+      component: (): Promise<any> => import('../views/ZImageGenerate.vue'),
     },
     {
       path: '/ZImageSettings',
       name: 'ZImageSettings',
-      component: () => import('../views/ZImageSettings.vue'),
+      component: (): Promise<any> => import('../views/ZImageSettings.vue'),
     },
   ],
 })
