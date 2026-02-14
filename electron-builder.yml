@@ -1,0 +1,65 @@
+appId: com.final2x.app
+productName: Final2x
+directories:
+  buildResources: build
+
+icon: resources/icon.png
+
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!resources/Final2x-core/**'
+
+asarUnpack:
+  - resources/*.png
+  - resources/*.svg
+  - resources/*.ico
+
+extraResources:
+  - from: resources/Final2x-core
+    to: Final2x-core
+
+afterSign: build/notarize.js
+
+win:
+  executableName: Final2x
+
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+
+dmg:
+  artifactName: ${name}-${version}.${ext}
+  background: build/macosDMGbg.jpeg
+  window:
+    x: 100
+    y: 100
+    width: 480
+    height: 500
+
+linux:
+  target:
+    - AppImage
+    - snap
+    - deb
+  maintainer: Tohrusky
+  category: Utility
+
+appImage:
+  artifactName: ${name}-${version}.${ext}
+
+npmRebuild: false

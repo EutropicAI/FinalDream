@@ -1,0 +1,76 @@
+{
+  "name": "Final2x",
+  "productName": "Final2x",
+  "version": "4.0.0",
+  "description": "A cross-platform image super-resolution tool.",
+  "author": "Tohrusky",
+  "homepage": "https://github.com/EutropicAI/Final2x",
+  "main": "./out/main/index.js",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "test": "vitest run --coverage",
+    "lint": "eslint . --fix",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+    "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",
+    "typecheck": "pnpm run typecheck:node && npm run typecheck:web",
+    "start": "electron-vite preview",
+    "build": "electron-vite build",
+    "postinstall": "electron-builder install-app-deps",
+    "fetchcore": "node ./resources/download-core.js",
+    "build:mac-arm64": "pnpm run build && electron-builder --mac --arm64 --publish=never",
+    "build:mac-x64": "pnpm run build && electron-builder --mac --x64 --publish=never",
+    "build:win-arm64": "pnpm run build && electron-builder --win --arm64 --dir --publish=never",
+    "build:win-x64": "pnpm run build && electron-builder --win --x64 --dir --publish=never",
+    "build:linux-x64": "pnpm run build && electron-builder --linux --x64 --publish=never",
+    "build:linux-arm64": "pnpm run build && electron-builder --linux --arm64 --publish=never"
+  },
+  "dependencies": {
+    "@intlify/unplugin-vue-i18n": "^6.0.8",
+    "@vicons/antd": "^0.13.0",
+    "@vicons/ionicons5": "^0.13.0",
+    "naive-ui": "^2.43.1",
+    "pinia": "^3.0.3",
+    "pinia-plugin-persistedstate": "^4.5.0",
+    "sass": "^1.93.2",
+    "systeminformation": "^5.27.10",
+    "tree-kill": "^1.2.2",
+    "vfonts": "^0.0.3",
+    "vue": "^3.5.22",
+    "vue-i18n": "^11.1.12",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^5.4.1",
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/tsconfig": "^1.0.1",
+    "@electron-toolkit/utils": "^4.0.0",
+    "@electron/notarize": "^2.5.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vue/test-utils": "^2.4.6",
+    "electron": "^27.3.11",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^4.0.1",
+    "eslint": "^9.37.0",
+    "extract-zip": "^2.0.1",
+    "jsdom": "^26.1.0",
+    "node-fetch": "^3.3.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron"
+    ],
+    "overrides": {
+      "@parcel/watcher": "npm:empty-npm-package@1.0.0"
+    }
+  }
+}
