@@ -16,17 +16,24 @@ const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
     <div class="image-display">
       <NSpin :show="isGenerating" size="large">
         <div v-if="generatedImagePath" class="image-content">
-          <NImageGroup>
-            <NImage
-              :src="generatedImagePath"
-              object-fit="contain"
-              class="generated-image"
-            />
-          </NImageGroup>
+          <NCard class="image-card" :bordered="false">
+            <NImageGroup :show-toolbar="false">
+              <NImage
+                :src="generatedImagePath"
+                object-fit="contain"
+                class="generated-image"
+              />
+            </NImageGroup>
+          </NCard>
         </div>
         <div v-else class="placeholder">
-          <div class="placeholder-text">
-            {{ isGenerating ? 'Generating...' : 'No image generated yet' }}
+          <div class="placeholder-content">
+            <div class="placeholder-icon">
+              🖼️
+            </div>
+            <div class="placeholder-text">
+              {{ isGenerating ? 'Generating your image...' : 'Enter a prompt and click Generate' }}
+            </div>
           </div>
         </div>
       </NSpin>
@@ -50,7 +57,7 @@ const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .image-display {
@@ -63,21 +70,24 @@ const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
 }
 
 .image-content {
-  max-width: 100%;
-  max-height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.image-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .generated-image {
   max-width: 100%;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 200px);
   width: auto;
   height: auto;
   object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .placeholder {
@@ -87,8 +97,20 @@ const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
   min-height: 400px;
 }
 
+.placeholder-content {
+  text-align: center;
+  color: #666;
+}
+
+.placeholder-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
 .placeholder-text {
-  font-size: 18px;
-  color: #999;
+  font-size: 20px;
+  font-weight: 500;
+  opacity: 0.7;
 }
 </style>

@@ -9,6 +9,7 @@ import { useZImageStore } from '../store/zimageStore'
 defineEmits<{
   toggleLogs: []
 }>()
+
 const router = useRouter()
 const currentView = ref<'home' | 'settings'>('home')
 
@@ -22,7 +23,6 @@ function handleGenerate(): void {
 
   const result = startGeneration()
   if (!result.success && result.message) {
-    // Error will be shown in the main view via event
     console.error(result.message)
   }
 }
@@ -47,44 +47,49 @@ function switchView(view: 'home' | 'settings'): void {
             v-model:value="prompt"
             type="textarea"
             placeholder="Enter your prompt..."
-            :autosize="{ minRows: 4, maxRows: 8 }"
+            :autosize="{ minRows: 6, maxRows: 8 }"
+            size="tiny"
           />
 
-          <NCollapse>
+          <NCollapse :default-expanded-names="[]">
             <NCollapseItem title="Negative Prompt" name="negative">
               <NInput
                 v-model:value="negativePrompt"
                 type="textarea"
                 placeholder="Enter negative prompt..."
                 :autosize="{ minRows: 2, maxRows: 4 }"
+                size="tiny"
               />
             </NCollapseItem>
           </NCollapse>
 
-          <NButton
-            type="primary"
-            block
-            :loading="isGenerating"
-            @click="handleGenerate"
-          >
-            Generate
-          </NButton>
+          <NSpace vertical :size="8">
+            <NButton
+              type="primary"
+              block
+              size="large"
+              :loading="isGenerating"
+              @click="handleGenerate"
+            >
+              Generate
+            </NButton>
 
-          <NButton
-            block
-            @click="$emit('toggleLogs')"
-          >
-            View Logs
-          </NButton>
+            <NButton
+              block
+              @click="$emit('toggleLogs')"
+            >
+              View Logs
+            </NButton>
+          </NSpace>
         </NSpace>
       </div>
     </div>
 
     <div class="sidebar-footer">
-      <NDivider style="margin: 0" />
+      <NDivider style="margin: 12px 0" />
       <div class="nav-buttons">
         <NButton
-          :type="currentView === 'home' ? 'primary' : 'default'"
+          :type="currentView === 'home' ? 'primary' : 'tertiary'"
           circle
           size="large"
           @click="switchView('home')"
@@ -94,7 +99,7 @@ function switchView(view: 'home' | 'settings'): void {
           </template>
         </NButton>
         <NButton
-          :type="currentView === 'settings' ? 'primary' : 'default'"
+          :type="currentView === 'settings' ? 'primary' : 'tertiary'"
           circle
           size="large"
           @click="switchView('settings')"
@@ -114,8 +119,8 @@ function switchView(view: 'home' | 'settings'): void {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
-  border-right: 1px solid #e8e8e8;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  border-right: 1px solid #e0e0e0;
 }
 
 .sidebar-content {
@@ -129,7 +134,7 @@ function switchView(view: 'home' | 'settings'): void {
 }
 
 .sidebar-footer {
-  padding: 16px;
+  padding: 0 16px 16px;
 }
 
 .nav-buttons {

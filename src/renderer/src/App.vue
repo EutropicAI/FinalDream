@@ -70,13 +70,13 @@ function handleToggleLogs(): void {
   width: 100vw;
   height: 100vh;
   display: flex;
-  background-color: #fffafa;
+  background-color: #f0f2f5;
 }
 
 .sidebar-container {
-  width: 20%;
-  min-width: 280px;
-  max-width: 400px;
+  width: 15%;
+  min-width: 240px;
+  max-width: 320px;
   height: 100%;
 }
 
