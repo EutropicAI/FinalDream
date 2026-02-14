@@ -17,9 +17,10 @@ function createWindow(): void {
     minWidth: 670,
     maxHeight: 670,
     minHeight: 470,
-    frame: false,
+    frame: true,
     show: false,
     autoHideMenuBar: true,
+    titleBarStyle: 'default',
     icon: nativeImage.createFromPath(appIcon),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
