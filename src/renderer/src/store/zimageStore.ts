@@ -41,9 +41,9 @@ export const useZImageStore = defineStore(
     }
 
     const selectOutputFolder = async (): Promise<void> => {
-      const path = await ipcRenderer.invoke(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG)
-      if (path) {
-        outputFolder.value = path
+      const paths = await ipcRenderer.invoke(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, ['openDirectory'])
+      if (Array.isArray(paths) && paths.length > 0) {
+        outputFolder.value = paths[0]
       }
     }
 
