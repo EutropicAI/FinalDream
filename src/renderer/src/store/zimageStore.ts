@@ -1,7 +1,7 @@
 import type { ZImageOptions } from '@shared/type/zimage'
 import { IpcChannelInvoke, IpcChannelOn, IpcChannelSend } from '@shared/const/ipc'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const { ipcRenderer } = window.electron
 
@@ -21,7 +21,7 @@ export const useZImageStore = defineStore(
     const availableModels = ref<string[]>([])
     const isGenerating = ref(false)
     const logs = ref('')
-    const generatedImagePath = ref('')
+    const generatedImages = ref<string[]>([])
 
     const fetchModels = async (): Promise<void> => {
       try {
@@ -60,7 +60,7 @@ export const useZImageStore = defineStore(
 
       isGenerating.value = true
       logs.value = ''
-      generatedImagePath.value = '' // Clear previous image
+      // Don't clear generatedImages - keep history
 
       const options: ZImageOptions = {
         prompt: prompt.value,
@@ -88,8 +88,8 @@ export const useZImageStore = defineStore(
         ipcRenderer.removeAllListeners(IpcChannelOn.COMMAND_CLOSE)
 
         if (code === 0) {
-          // Success - use the original output path we constructed
-          generatedImagePath.value = options.output || ''
+          // Success - file watcher will detect the new image automatically
+          logs.value += '\nImage generated successfully!'
         }
         else {
           logs.value += `\nProcess exited with code ${code}`
@@ -105,6 +105,52 @@ export const useZImageStore = defineStore(
       return { success: true }
     }
 
+    // Listen for new images from file watcher
+    ipcRenderer.on(IpcChannelOn.NEW_IMAGE_DETECTED, (_event: any, imagePath: string) => {
+      console.log('[Store] New image detected:', imagePath)
+      console.log('[Store] Current generatedImages:', generatedImages.value)
+      if (!generatedImages.value.includes(imagePath)) {
+        generatedImages.value.unshift(imagePath) // Add to beginning
+        console.log('[Store] Image added. New count:', generatedImages.value.length)
+      }
+      else {
+        console.log('[Store] Image already in list, skipping')
+      }
+    })
+
+    // Watch outputFolder changes and automatically manage file watcher
+    watch(outputFolder, async (newFolder, oldFolder) => {
+      console.log('[Store] Output folder changed:', { old: oldFolder, new: newFolder })
+      
+      // Stop watching old directory if exists
+      if (oldFolder) {
+        console.log('[Store] Stopping watcher for old directory:', oldFolder)
+        await ipcRenderer.invoke(IpcChannelInvoke.STOP_WATCHING_DIRECTORY)
+      }
+      
+      // Start watching new directory if exists
+      if (newFolder) {
+        console.log('[Store] Starting watcher for new directory:', newFolder)
+        try {
+          await ipcRenderer.invoke(IpcChannelInvoke.START_WATCHING_DIRECTORY, newFolder)
+          console.log('[Store] File watcher started successfully')
+        }
+        catch (error) {
+          console.error('[Store] Failed to start file watcher:', error)
+        }
+      }
+    }, { immediate: true }) // immediate: true runs on first mount
+
+    const addGeneratedImage = (path: string): void => {
+      if (!generatedImages.value.includes(path)) {
+        generatedImages.value.unshift(path)
+      }
+    }
+
+    const clearGeneratedImages = (): void => {
+      generatedImages.value = []
+    }
+
     return {
       prompt,
       negativePrompt,
@@ -118,10 +164,12 @@ export const useZImageStore = defineStore(
       availableModels,
       isGenerating,
       logs,
-      generatedImagePath,
+      generatedImages,
       fetchModels,
       selectOutputFolder,
       startGeneration,
+      addGeneratedImage,
+      clearGeneratedImages,
     }
   },
   {

@@ -2,28 +2,45 @@
 import type { Ref } from 'vue'
 import { NCard, NDrawer, NImage, NImageGroup, NLog, NSpin } from 'naive-ui'
 import { storeToRefs } from 'pinia'
-import { inject } from 'vue'
+import { inject, nextTick, ref, watch } from 'vue'
 import { useZImageStore } from '../store/zimageStore'
 
 const zImageStore = useZImageStore()
-const { isGenerating, logs, generatedImagePath } = storeToRefs(zImageStore)
+const { isGenerating, logs, generatedImages } = storeToRefs(zImageStore)
 
 const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
+const logRef = ref<InstanceType<typeof NLog> | null>(null)
+
+// Auto-scroll to bottom when logs change
+watch(logs, async () => {
+  await nextTick()
+  if (logRef.value?.$el) {
+    const scrollContainer = logRef.value.$el.querySelector('.n-log-loader')
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+    }
+  }
+})
 </script>
 
 <template>
   <div class="zimage-home">
     <div class="image-display">
       <NSpin :show="isGenerating" size="large">
-        <div v-if="generatedImagePath" class="image-content">
+        <div v-if="generatedImages.length > 0" class="image-content">
           <NCard class="image-card" :bordered="false">
             <NImageGroup :show-toolbar="false">
               <NImage
-                :src="generatedImagePath"
+                :src="generatedImages[0]"
                 object-fit="contain"
                 class="generated-image"
               />
             </NImageGroup>
+            <template v-if="generatedImages.length > 1" #footer>
+              <div class="image-count">
+                {{ generatedImages.length }} images generated
+              </div>
+            </template>
           </NCard>
         </div>
         <div v-else class="placeholder">
@@ -44,9 +61,7 @@ const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
       :height="400"
       placement="top"
     >
-      <NCard title="Generation Logs" style="height: 100%">
-        <NLog :log="logs" :rows="30" />
-      </NCard>
+      <NLog ref="logRef" :log="logs" :rows="25" language="log" />
     </NDrawer>
   </div>
 </template>
@@ -112,5 +127,11 @@ const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
   font-size: 20px;
   font-weight: 500;
   opacity: 0.7;
+}
+
+.image-count {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
 }
 </style>

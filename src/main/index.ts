@@ -4,6 +4,7 @@ import { IpcChannelInvoke, IpcChannelSend } from '@shared/const/ipc'
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
 import appIcon from '../../resources/icon.png?asset'
 import trayIcon from '../../resources/tray.png?asset'
+import { startWatchingDirectory, stopWatchingDirectory } from './fileWatcher'
 import { openDirectory } from './openDirectory'
 import { getZImageModels, killZImageProcess, runZImageCommand } from './zimage'
 
@@ -37,6 +38,18 @@ function createWindow(): void {
 
   ipcMain.handle(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, openDirectory)
   ipcMain.handle(IpcChannelInvoke.ZIMAGE_GET_MODELS, getZImageModels)
+
+  // File watcher handlers
+  ipcMain.handle(IpcChannelInvoke.START_WATCHING_DIRECTORY, (_event, dirPath: string) => {
+    const currentMainWindow = BrowserWindow.getAllWindows()[0]
+    if (currentMainWindow) {
+      startWatchingDirectory(dirPath, currentMainWindow)
+    }
+  })
+
+  ipcMain.handle(IpcChannelInvoke.STOP_WATCHING_DIRECTORY, () => {
+    stopWatchingDirectory()
+  })
 
   ipcMain.on(IpcChannelSend.MINIMIZE, () => {
     mainWindow.minimize()
@@ -146,6 +159,8 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    stopWatchingDirectory()
+    killZImageProcess()
     app.quit()
   }
 })

@@ -4,6 +4,8 @@
 export enum IpcChannelInvoke {
   OPEN_DIRECTORY_DIALOG = 'ipc:open-directory-dialog',
   ZIMAGE_GET_MODELS = 'ipc:invoke:zimage-get-models',
+  START_WATCHING_DIRECTORY = 'ipc:invoke:start-watching-directory',
+  STOP_WATCHING_DIRECTORY = 'ipc:invoke:stop-watching-directory',
 }
 
 /**
@@ -25,4 +27,5 @@ export enum IpcChannelOn {
   COMMAND_STDOUT = 'ipc:on:command-stdout',
   COMMAND_STDERR = 'ipc:on:command-stderr',
   COMMAND_CLOSE = 'ipc:on:command-close-code',
+  NEW_IMAGE_DETECTED = 'ipc:on:new-image-detected',
 }
