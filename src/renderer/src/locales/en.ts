@@ -12,6 +12,7 @@ export const en = {
     imageSizeLabel: 'Image Size',
     stepsLabel: 'Steps',
     seedLabel: 'Random Seed',
+    gpuIdLabel: 'GPU ID (-1 for CPU)',
     browseButton: 'Browse',
     unknownSelection: 'Unknown Selection',
   },

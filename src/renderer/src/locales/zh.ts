@@ -12,6 +12,7 @@ export const zh = {
     imageSizeLabel: '图片尺寸',
     stepsLabel: '步数',
     seedLabel: '随机种子',
+    gpuIdLabel: 'GPU ID (-1 代表 CPU)',
     browseButton: '浏览',
     unknownSelection: '未选择',
   },

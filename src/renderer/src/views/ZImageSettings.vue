@@ -21,6 +21,7 @@ const {
   height,
   steps,
   seed,
+  gpuId,
   outputFolder,
 } = storeToRefs(zImageStore)
 const { fetchModels, selectOutputFolder } = zImageStore
@@ -55,6 +56,19 @@ const seedStr = computed({
     else {
       const num = Number.parseInt(val, 10)
       seed.value = Number.isNaN(num) ? 'rand' : num
+    }
+  },
+})
+
+const gpuIdStr = computed({
+  get: () => String(gpuId.value),
+  set: (val: string) => {
+    if (val === 'auto') {
+      gpuId.value = 'auto'
+    }
+    else {
+      const num = Number.parseInt(val, 10)
+      gpuId.value = Number.isNaN(num) ? 'auto' : num
     }
   },
 })
@@ -112,6 +126,13 @@ const seedStr = computed({
           <NInput
             v-model:value="seedStr"
             placeholder="Seed (e.g. 12345 or rand)"
+          />
+        </NFormItem>
+
+        <NFormItem :label="$t('ZImageSettings.gpuIdLabel')">
+          <NInput
+            v-model:value="gpuIdStr"
+            placeholder="GPU ID (e.g. 0, 1, or -1 for CPU, auto)"
           />
         </NFormItem>
       </NForm>

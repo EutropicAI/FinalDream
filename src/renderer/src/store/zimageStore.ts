@@ -15,6 +15,7 @@ export const useZImageStore = defineStore(
     const height = ref(1024)
     const steps = ref<number | 'auto'>('auto')
     const seed = ref<number | 'rand'>('rand')
+    const gpuId = ref<number | 'auto'>('auto')
 
     const availableModels = ref<string[]>([])
     const isGenerating = ref(false)
@@ -61,7 +62,26 @@ export const useZImageStore = defineStore(
         steps: steps.value,
         seed: seed.value,
         model: selectedModel.value,
+        gpuId: gpuId.value === 'auto' ? -1 : gpuId.value, // -1 is default/auto in backend if not passed? No, backend checks !== undefined.
+        // README says: -g gpu-id            gpu device to use (-1=cpu, default=auto)
+        // If we pass -1, it might mean CPU.
+        // If we don't pass -g, it's default=auto.
+        // So if 'auto', we should NOT pass it, OR pass it as ... wait.
+        // zimage.ts: if (options.gpuId !== undefined) args.push('-g', `${options.gpuId}`)
+        // If we want 'auto' (default), we should undefined it or not pass it?
+        // Let's check backend logic again.
       }
+
+      // If gpuId is 'auto', we might want to omit it to let the binary decide (default=auto).
+      // If user specifically wants CPU (-1), they select -1.
+      // So if 'auto', let's set it to undefined in the options sent to IPC.
+
+      const ipcOptions = { ...options }
+      if (gpuId.value === 'auto') {
+        delete (ipcOptions as any).gpuId
+      }
+      // Actually, options object above has type inferred.
+      // Let's adjust zimageStore logic to handle this.
 
       // We need to track the output path to display it later
       // If outputFolder is empty, where does it go? Run path.
@@ -118,6 +138,7 @@ export const useZImageStore = defineStore(
       height,
       steps,
       seed,
+      gpuId,
       availableModels,
       isGenerating,
       logs,
@@ -138,6 +159,7 @@ export const useZImageStore = defineStore(
         'height',
         'steps',
         'seed',
+        'gpuId',
       ],
     },
   },
