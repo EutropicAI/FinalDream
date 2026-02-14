@@ -1,114 +1,43 @@
 <script lang="ts" setup>
-import { NButton, NCard, NDrawer, NImage, NImageGroup, NInput, NLog, NSpace, NSpin, useMessage } from 'naive-ui'
+import type { Ref } from 'vue'
+import { NCard, NDrawer, NImage, NImageGroup, NLog, NSpin } from 'naive-ui'
 import { storeToRefs } from 'pinia'
-import { ref } from 'vue'
+import { inject } from 'vue'
 import { useZImageStore } from '../store/zimageStore'
 
 const zImageStore = useZImageStore()
-const { prompt, negativePrompt, isGenerating, logs, generatedImagePath }
-  = storeToRefs(zImageStore)
-const { startGeneration } = zImageStore
+const { isGenerating, logs, generatedImagePath } = storeToRefs(zImageStore)
 
-const message = useMessage()
-const showLogDrawer = ref(false)
-
-function handleGenerate(): void {
-  if (!prompt.value)
-    return
-
-  const result = startGeneration()
-  if (!result.success && result.message) {
-    message.error(result.message)
-  }
-}
-
-async function copyImagePath(): Promise<void> {
-  if (generatedImagePath.value) {
-    try {
-      await navigator.clipboard.writeText(generatedImagePath.value)
-      message.success('Image path copied to clipboard!')
-    }
-    catch (error) {
-      message.error(`Failed to copy path, ${error}`)
-    }
-  }
-}
+const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
 </script>
 
 <template>
-  <div class="zimage-generate-container">
-    <NSpace vertical size="large">
-      <NCard>
-        <NSpace vertical>
-          <NInput
-            v-model:value="prompt"
-            type="textarea"
-            :placeholder="$t('ZImageGenerate.promptPlaceholder')"
-            :autosize="{ minRows: 3, maxRows: 6 }"
-          />
-          <NInput
-            v-model:value="negativePrompt"
-            type="textarea"
-            :placeholder="$t('ZImageGenerate.negativePromptPlaceholder')"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-          />
-          <div style="display: flex; gap: 8px">
-            <NButton
-              type="primary"
-              :loading="isGenerating"
-              style="flex: 1"
-              @click="handleGenerate"
-            >
-              {{ $t("ZImageGenerate.generateButton") }}
-            </NButton>
-            <NButton @click="showLogDrawer = true">
-              View Logs
-            </NButton>
-          </div>
-        </NSpace>
-      </NCard>
-
-      <NCard
-        v-if="generatedImagePath || isGenerating"
-        :title="$t('ZImageGenerate.resultTitle')"
-      >
-        <div class="image-container">
-          <NSpin :show="isGenerating">
-            <NImageGroup v-if="generatedImagePath">
-              <div class="image-wrapper">
-                <NImage
-                  :src="generatedImagePath"
-                  object-fit="contain"
-                  class="generated-image"
-                />
-                <div class="image-actions">
-                  <NButton
-                    type="primary"
-                    size="small"
-                    @click="copyImagePath"
-                  >
-                    Copy Path
-                  </NButton>
-                </div>
-              </div>
-            </NImageGroup>
-            <div v-else class="placeholder">
-              Generating...
-            </div>
-          </NSpin>
+  <div class="zimage-home">
+    <div class="image-display">
+      <NSpin :show="isGenerating" size="large">
+        <div v-if="generatedImagePath" class="image-content">
+          <NImageGroup>
+            <NImage
+              :src="generatedImagePath"
+              object-fit="contain"
+              class="generated-image"
+            />
+          </NImageGroup>
         </div>
-      </NCard>
-    </NSpace>
+        <div v-else class="placeholder">
+          <div class="placeholder-text">
+            {{ isGenerating ? 'Generating...' : 'No image generated yet' }}
+          </div>
+        </div>
+      </NSpin>
+    </div>
 
     <NDrawer
       v-model:show="showLogDrawer"
       :height="400"
       placement="top"
     >
-      <NCard
-        :title="$t('ZImageGenerate.logsTitle')"
-        style="height: 100%"
-      >
+      <NCard title="Generation Logs" style="height: 100%">
         <NLog :log="logs" :rows="30" />
       </NCard>
     </NDrawer>
@@ -116,50 +45,50 @@ async function copyImagePath(): Promise<void> {
 </template>
 
 <style scoped>
-.zimage-generate-container {
-  padding: 20px;
-  box-sizing: border-box;
+.zimage-home {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
 }
 
-.image-container {
+.image-display {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
-  padding: 20px;
+  padding: 40px;
   box-sizing: border-box;
 }
 
-.image-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.image-content {
   max-width: 100%;
-  width: 100%;
+  max-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .generated-image {
   max-width: 100%;
-  max-height: 600px;
+  max-height: calc(100vh - 120px);
   width: auto;
   height: auto;
-  border-radius: 4px;
   object-fit: contain;
-}
-
-.image-actions {
-  margin-top: 12px;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .placeholder {
-  padding: 20px;
-  color: #888;
-  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.placeholder-text {
+  font-size: 18px;
+  color: #999;
 }
 </style>

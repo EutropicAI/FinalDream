@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { NConfigProvider, NDialogProvider, NGlobalStyle, NMessageProvider, NNotificationProvider } from 'naive-ui'
+import { provide, ref } from 'vue'
 import { RouterView } from 'vue-router'
-import BottomNavigation from './components/bottomNavigation.vue'
+import Sidebar from './components/Sidebar.vue'
 
 const themeOverrides = {
   Select: {
@@ -12,6 +13,13 @@ const themeOverrides = {
     },
   },
 }
+
+const showLogsDrawer = ref(false)
+provide('showLogsDrawer', showLogsDrawer)
+
+function handleToggleLogs(): void {
+  showLogsDrawer.value = !showLogsDrawer.value
+}
 </script>
 
 <template>
@@ -20,8 +28,11 @@ const themeOverrides = {
     <NNotificationProvider placement="top">
       <NMessageProvider>
         <NDialogProvider>
-          <div class="background">
-            <div class="view">
+          <div class="app-container">
+            <div class="sidebar-container">
+              <Sidebar @toggle-logs="handleToggleLogs" />
+            </div>
+            <div class="main-container">
               <RouterView v-slot="{ Component }">
                 <transition mode="out-in" name="custom-fade">
                   <keep-alive>
@@ -30,7 +41,6 @@ const themeOverrides = {
                 </transition>
               </RouterView>
             </div>
-            <BottomNavigation />
           </div>
         </NDialogProvider>
       </NMessageProvider>
@@ -52,40 +62,27 @@ const themeOverrides = {
   opacity: 0;
 }
 
-$global-color: #fffafa;
-$buttom-bottom: 8px;
-
 ::-webkit-scrollbar {
   display: none;
 }
 
-.n-config-provider {
+.app-container {
   width: 100vw;
   height: 100vh;
-}
-
-.background {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  background-color: $global-color;
-  transition: all 300ms ease-in-out;
-  //padding-top: 30px;
   display: flex;
-  flex-direction: column;
-
-  .view {
-    overflow: scroll;
-    flex: 1;
-  }
+  background-color: #fffafa;
 }
 
-.fade-enter-active {
-  transition: opacity 0.6s ease-in-out;
+.sidebar-container {
+  width: 20%;
+  min-width: 280px;
+  max-width: 400px;
+  height: 100%;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.main-container {
+  flex: 1;
+  height: 100%;
+  overflow: auto;
 }
 </style>
