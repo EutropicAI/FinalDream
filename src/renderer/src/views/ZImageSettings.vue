@@ -62,7 +62,7 @@ const seedStr = computed({
 
 <template>
   <div class="zimage-settings-container">
-    <NCard title="Z-Image Settings">
+    <NCard>
       <NForm label-placement="left" label-width="120">
         <NFormItem :label="$t('ZImageSettings.modelLabel')">
           <NSelect

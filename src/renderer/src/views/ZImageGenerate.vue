@@ -18,7 +18,7 @@ function handleGenerate(): void {
 <template>
   <div class="zimage-generate-container">
     <NSpace vertical size="large">
-      <NCard title="Z-Image Generation">
+      <NCard>
         <NSpace vertical>
           <NInput
             v-model:value="prompt"
