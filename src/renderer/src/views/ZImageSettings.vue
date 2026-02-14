@@ -7,13 +7,12 @@ import {
   NInput,
   NInputNumber,
   NSelect,
-  NSpace,
-} from 'naive-ui'
-import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
-import { useZImageStore } from '../store/zimageStore'
+} from "naive-ui";
+import { storeToRefs } from "pinia";
+import { computed, onMounted } from "vue";
+import { useZImageStore } from "../store/zimageStore";
 
-const zImageStore = useZImageStore()
+const zImageStore = useZImageStore();
 const {
   selectedModel,
   availableModels,
@@ -23,55 +22,52 @@ const {
   seed,
   gpuId,
   outputFolder,
-} = storeToRefs(zImageStore)
-const { fetchModels, selectOutputFolder } = zImageStore
+} = storeToRefs(zImageStore);
+const { fetchModels, selectOutputFolder } = zImageStore;
 
 onMounted(() => {
-  fetchModels()
-})
+  fetchModels();
+});
 
 const computedModelOptions = computed(() => {
-  return availableModels.value.map(m => ({ label: m, value: m }))
-})
+  return availableModels.value.map((m) => ({ label: m, value: m }));
+});
 
 const stepsStr = computed({
   get: () => String(steps.value),
   set: (val: string) => {
-    if (val === 'auto') {
-      steps.value = 'auto'
-    }
-    else {
-      const num = Number.parseInt(val, 10)
-      steps.value = Number.isNaN(num) ? 'auto' : num
+    if (val === "auto") {
+      steps.value = "auto";
+    } else {
+      const num = Number.parseInt(val, 10);
+      steps.value = Number.isNaN(num) ? "auto" : num;
     }
   },
-})
+});
 
 const seedStr = computed({
   get: () => String(seed.value),
   set: (val: string) => {
-    if (val === 'rand') {
-      seed.value = 'rand'
-    }
-    else {
-      const num = Number.parseInt(val, 10)
-      seed.value = Number.isNaN(num) ? 'rand' : num
+    if (val === "rand") {
+      seed.value = "rand";
+    } else {
+      const num = Number.parseInt(val, 10);
+      seed.value = Number.isNaN(num) ? "rand" : num;
     }
   },
-})
+});
 
 const gpuIdStr = computed({
   get: () => String(gpuId.value),
   set: (val: string) => {
-    if (val === 'auto') {
-      gpuId.value = 'auto'
-    }
-    else {
-      const num = Number.parseInt(val, 10)
-      gpuId.value = Number.isNaN(num) ? 'auto' : num
+    if (val === "auto") {
+      gpuId.value = "auto";
+    } else {
+      const num = Number.parseInt(val, 10);
+      gpuId.value = Number.isNaN(num) ? "auto" : num;
     }
   },
-})
+});
 </script>
 
 <template>
@@ -87,26 +83,35 @@ const gpuIdStr = computed({
         </NFormItem>
 
         <NFormItem :label="$t('ZImageSettings.outputFolderLabel')">
-          <NSpace>
+          <div style="display: flex; width: 100%; gap: 8px">
             <NInput
               v-model:value="outputFolder"
               placeholder="Default Output Folder"
               readonly
+              style="flex: 1"
             />
             <NButton @click="selectOutputFolder">
               {{ $t("ZImageSettings.browseButton") }}
             </NButton>
-          </NSpace>
+          </div>
         </NFormItem>
 
         <NFormItem :label="$t('ZImageSettings.imageSizeLabel')">
-          <NSpace>
-            <NInputNumber v-model:value="width" placeholder="Width" />
-            <div style="line-height: 34px">
-              x
-            </div>
-            <NInputNumber v-model:value="height" placeholder="Height" />
-          </NSpace>
+          <div
+            style="display: flex; width: 100%; align-items: center; gap: 8px"
+          >
+            <NInputNumber
+              v-model:value="width"
+              placeholder="Width"
+              style="flex: 1"
+            />
+            <div>x</div>
+            <NInputNumber
+              v-model:value="height"
+              placeholder="Height"
+              style="flex: 1"
+            />
+          </div>
         </NFormItem>
 
         <NFormItem :label="$t('ZImageSettings.stepsLabel')">
