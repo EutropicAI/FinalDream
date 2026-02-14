@@ -7,12 +7,12 @@ import {
   NInput,
   NInputNumber,
   NSelect,
-} from "naive-ui";
-import { storeToRefs } from "pinia";
-import { computed, onMounted } from "vue";
-import { useZImageStore } from "../store/zimageStore";
+} from 'naive-ui'
+import { storeToRefs } from 'pinia'
+import { computed, onMounted } from 'vue'
+import { useZImageStore } from '../store/zimageStore'
 
-const zImageStore = useZImageStore();
+const zImageStore = useZImageStore()
 const {
   selectedModel,
   availableModels,
@@ -22,52 +22,55 @@ const {
   seed,
   gpuId,
   outputFolder,
-} = storeToRefs(zImageStore);
-const { fetchModels, selectOutputFolder } = zImageStore;
+} = storeToRefs(zImageStore)
+const { fetchModels, selectOutputFolder } = zImageStore
 
 onMounted(() => {
-  fetchModels();
-});
+  fetchModels()
+})
 
 const computedModelOptions = computed(() => {
-  return availableModels.value.map((m) => ({ label: m, value: m }));
-});
+  return availableModels.value.map(m => ({ label: m, value: m }))
+})
 
 const stepsStr = computed({
   get: () => String(steps.value),
   set: (val: string) => {
-    if (val === "auto") {
-      steps.value = "auto";
-    } else {
-      const num = Number.parseInt(val, 10);
-      steps.value = Number.isNaN(num) ? "auto" : num;
+    if (val === 'auto') {
+      steps.value = 'auto'
+    }
+    else {
+      const num = Number.parseInt(val, 10)
+      steps.value = Number.isNaN(num) ? 'auto' : num
     }
   },
-});
+})
 
 const seedStr = computed({
   get: () => String(seed.value),
   set: (val: string) => {
-    if (val === "rand") {
-      seed.value = "rand";
-    } else {
-      const num = Number.parseInt(val, 10);
-      seed.value = Number.isNaN(num) ? "rand" : num;
+    if (val === 'rand') {
+      seed.value = 'rand'
+    }
+    else {
+      const num = Number.parseInt(val, 10)
+      seed.value = Number.isNaN(num) ? 'rand' : num
     }
   },
-});
+})
 
 const gpuIdStr = computed({
   get: () => String(gpuId.value),
   set: (val: string) => {
-    if (val === "auto") {
-      gpuId.value = "auto";
-    } else {
-      const num = Number.parseInt(val, 10);
-      gpuId.value = Number.isNaN(num) ? "auto" : num;
+    if (val === 'auto') {
+      gpuId.value = 'auto'
+    }
+    else {
+      const num = Number.parseInt(val, 10)
+      gpuId.value = Number.isNaN(num) ? 'auto' : num
     }
   },
-});
+})
 </script>
 
 <template>

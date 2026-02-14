@@ -3,7 +3,10 @@ dist
 out
 *.log*
 *.DS_Store
-/resources/FinalDream-core
+
 /outputs/
 /.idea
 /coverage/
+
+/resources/FinalDream-core
+/resources/models/z-image*

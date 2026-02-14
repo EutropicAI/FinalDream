@@ -2,7 +2,7 @@ import type { IpcMainEvent } from 'electron'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { readdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, normalize } from 'node:path'
 import { IpcChannelOn } from '@shared/const/ipc'
 import { getCorePath } from './getCorePath'
 
@@ -16,8 +16,10 @@ export async function getZImageModels(): Promise<string[]> {
   // We need to double check getCorePath implementation or assume check two levels.
   // Actually, getCorePath in runCommand.ts returns the executable path.
   // So we need to dirname it.
-  const coreDir = join(corePath, '..')
-  const modelsDir = join(coreDir, 'models')
+  // getCorePath returns path to executable: .../FinalDream-core/zimage-ncnn-vulkan
+  // models are now in .../models (sibling to FinalDream-core)
+  const executableDir = join(corePath, '..') // .../FinalDream-core
+  const modelsDir = join(executableDir, '..', 'models') // .../models
 
   try {
     const entries = await readdir(modelsDir, { withFileTypes: true })
@@ -46,20 +48,20 @@ export interface ZImageOptions {
 export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptions): Promise<void> {
   const executablePath = getCorePath()
 
-  // Construct arguments
+  // Construct arguments as an array (no quotes needed when passing to spawn directly)
   const args: string[] = []
 
   // -p prompt
-  args.push('-p', `"${options.prompt}"`)
+  args.push('-p', options.prompt)
 
   // -n negative-prompt
   if (options.negativePrompt) {
-    args.push('-n', `"${options.negativePrompt}"`)
+    args.push('-n', options.negativePrompt)
   }
 
   // -o output-path
   if (options.output) {
-    args.push('-o', `"${options.output}"`)
+    args.push('-o', normalize(options.output))
   }
 
   // -s image-size
@@ -85,9 +87,10 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
   // Let's assume we pass the full path or relative path to the executable.
   if (options.model) {
     // We assume the model is a folder name in the models directory
-    const coreDir = join(executablePath, '..')
-    const modelPath = join(coreDir, 'models', options.model)
-    args.push('-m', `"${modelPath}"`)
+    // Models are in ../models relative to the executable's directory
+    const executableDir = join(executablePath, '..')
+    const modelPath = join(executableDir, '..', 'models', options.model)
+    args.push('-m', normalize(modelPath))
   }
 
   // -g gpu-id
@@ -95,8 +98,7 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
     args.push('-g', `${options.gpuId}`)
   }
 
-  const commandString = `"${executablePath}" ${args.join(' ')}`
-  console.log('Executing ZImage:', commandString)
+  console.log('Executing ZImage:', executablePath, args)
 
   // kill previous instance if running? Maybe not, allow parallel?
   // User didn't specify, but typically single instance for GPU usage is safer.
@@ -107,7 +109,13 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
     catch {}
   }
 
-  zImageChild = spawn(commandString, { shell: true })
+  // Set working directory to the executable's directory
+  // This allows the executable to find model files correctly
+  const executableDir = join(executablePath, '..')
+
+  zImageChild = spawn(executablePath, args, { 
+    cwd: executableDir
+  })
 
   zImageChild.stdout.on('data', (data) => {
     event.sender.send(IpcChannelOn.COMMAND_STDOUT, data.toString())

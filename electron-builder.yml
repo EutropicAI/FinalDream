@@ -13,6 +13,7 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   - '!resources/FinalDream-core/**'
+  - '!resources/models/**'
 
 asarUnpack:
   - resources/*.png
@@ -22,6 +23,8 @@ asarUnpack:
 extraResources:
   - from: resources/FinalDream-core
     to: FinalDream-core
+  - from: resources/models
+    to: models
 
 afterSign: build/notarize.js
 
