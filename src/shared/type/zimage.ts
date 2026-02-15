@@ -1,7 +1,7 @@
 export interface ZImageOptions {
   prompt: string
   negativePrompt?: string
-  outputFolder?: string
+  outputFolder: string
   width?: number
   height?: number
   steps?: number | 'auto'

@@ -8,7 +8,7 @@ import { join, normalize } from 'node:path'
 
 import { IpcChannelOn } from '@shared/const/ipc'
 
-import { getCorePath } from './getCorePath'
+import { getCorePath, getModelDir } from './getPath'
 import { PRESET_MODELS } from './modelManager'
 
 let zImageChild: ChildProcessWithoutNullStreams | null = null
@@ -57,10 +57,10 @@ export async function getZImageModels(): Promise<string[]> {
   }
 }
 
-async function runSingleZImage(event: IpcMainEvent, args: string[], executablePath: string, executableDir: string): Promise<number> {
+async function runSingleZImage(event: IpcMainEvent, args: string[], executablePath: string): Promise<number> {
   return new Promise((resolve) => {
     zImageChild = spawn(executablePath, args, {
-      cwd: executableDir,
+      shell: true,
     })
 
     zImageChild.stdout.on('data', (data) => {
@@ -88,8 +88,7 @@ async function runSingleZImage(event: IpcMainEvent, args: string[], executablePa
 
 export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptions): Promise<void> {
   isBatchStopped = false
-  const executablePath = getCorePath()
-  const executableDir = join(executablePath, '..')
+
   const count = options.count || 1
 
   console.log(`Starting batch generation: ${count} images`)
@@ -103,9 +102,7 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
     // dynamic filename
     const timestamp = Date.now()
     const filename = `out-${timestamp}-${i + 1}.png`
-    const outputPath = options.outputFolder
-      ? join(normalize(options.outputFolder), filename)
-      : join(executableDir, filename) // fallback
+    const outputPath = join(normalize(options.outputFolder), filename)
 
     // Construct arguments
     const args: string[] = []
@@ -131,7 +128,7 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
     }
 
     if (options.model) {
-      const modelPath = join(executableDir, '..', 'models', options.model)
+      const modelPath = join(getModelDir(), options.model)
       args.push('-m', normalize(modelPath))
     }
 
@@ -139,10 +136,10 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
       args.push('-g', `${options.gpuId}`)
     }
 
-    console.log(`[Batch ${i + 1}/${count}] Executing ZImage:`, executablePath, args)
+    console.log(`[Batch ${i + 1}/${count}] Executing ZImage:`, getCorePath(), args)
 
     // Run and wait
-    await runSingleZImage(event, args, executablePath, executableDir)
+    await runSingleZImage(event, args, getCorePath())
 
     // If stopped during execution, break
     if (isBatchStopped)

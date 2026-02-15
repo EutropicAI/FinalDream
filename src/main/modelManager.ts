@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { IpcChannelOn } from '@shared/const/ipc'
-import { getModelDir } from './getCorePath'
+import { getModelDir } from './getPath'
 
 const BASE_URL = 'https://modelscope.cn/api/v1/models/Tohrusky/z-image-turbo-ncnn/repo?Revision=master&FilePath='
 
