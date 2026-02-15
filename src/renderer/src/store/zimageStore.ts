@@ -80,7 +80,7 @@ export const useZImageStore = defineStore(
       const options: ZImageOptions = {
         prompt: prompt.value,
         negativePrompt: negativePrompt.value,
-        output: `${outputFolder.value}/out-${Date.now()}.png`,
+        outputFolder: outputFolder.value,
         width: width.value,
         height: height.value,
         steps: steps.value,

@@ -12,6 +12,7 @@ import { getCorePath } from './getCorePath'
 import { PRESET_MODELS } from './modelManager'
 
 let zImageChild: ChildProcessWithoutNullStreams | null = null
+let isBatchStopped = false
 
 export async function getZImageModels(): Promise<string[]> {
   const corePath = getCorePath()
@@ -56,92 +57,105 @@ export async function getZImageModels(): Promise<string[]> {
   }
 }
 
-export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptions): Promise<void> {
-  const executablePath = getCorePath()
+async function runSingleZImage(event: IpcMainEvent, args: string[], executablePath: string, executableDir: string): Promise<number> {
+  return new Promise((resolve) => {
+    zImageChild = spawn(executablePath, args, {
+      cwd: executableDir,
+    })
 
-  // Construct arguments as an array (no quotes needed when passing to spawn directly)
-  const args: string[] = []
+    zImageChild.stdout.on('data', (data) => {
+      event.sender.send(IpcChannelOn.COMMAND_STDOUT, data.toString())
+    })
 
-  // -p prompt
-  args.push('-p', options.prompt)
+    zImageChild.stderr.on('data', (data) => {
+      event.sender.send(IpcChannelOn.COMMAND_STDERR, data.toString())
+    })
 
-  // -n negative-prompt
-  if (options.negativePrompt) {
-    args.push('-n', options.negativePrompt)
-  }
+    zImageChild.on('close', (code) => {
+      event.sender.send(IpcChannelOn.COMMAND_CLOSE, code)
+      console.log(`ZImage process exited with code: ${code}`)
+      zImageChild = null
+      resolve(code ?? 0)
+    })
 
-  // -o output-path
-  if (options.output) {
-    args.push('-o', normalize(options.output))
-  }
-
-  // -s image-size
-  if (options.width && options.height) {
-    args.push('-s', `${options.width},${options.height}`)
-  }
-
-  // -l steps
-  if (options.steps && options.steps !== 'auto') {
-    args.push('-l', `${options.steps}`)
-  }
-
-  // -r random-seed
-  if (options.seed && options.seed !== 'rand') {
-    args.push('-r', `${options.seed}`)
-  }
-
-  // -m model-path
-  if (options.model) {
-    const executableDir = join(executablePath, '..')
-    const modelPath = join(executableDir, '..', 'models', options.model)
-    args.push('-m', normalize(modelPath))
-  }
-
-  // -g gpu-id
-  if (options.gpuId && options.gpuId !== 'auto') {
-    args.push('-g', `${options.gpuId}`)
-  }
-
-  // -c count
-  if (options.count && options.count > 1) {
-    args.push('-c', `${options.count}`)
-  }
-
-  console.log('Executing ZImage:', executablePath, args)
-
-  // kill previous instance if running? Maybe not, allow parallel?
-  // User didn't specify, but typically single instance for GPU usage is safer.
-  if (zImageChild) {
-    try {
-      zImageChild.kill()
-    }
-    catch {}
-  }
-
-  // Set working directory to the executable's directory
-  // This allows the executable to find model files correctly
-  const executableDir = join(executablePath, '..')
-
-  zImageChild = spawn(executablePath, args, {
-    cwd: executableDir,
-  })
-
-  zImageChild.stdout.on('data', (data) => {
-    event.sender.send(IpcChannelOn.COMMAND_STDOUT, data.toString())
-  })
-
-  zImageChild.stderr.on('data', (data) => {
-    event.sender.send(IpcChannelOn.COMMAND_STDERR, data.toString())
-  })
-
-  zImageChild.on('close', (code) => {
-    event.sender.send(IpcChannelOn.COMMAND_CLOSE, code)
-    console.log(`ZImage process exited with code: ${code}`)
-    zImageChild = null
+    zImageChild.on('error', (err) => {
+      event.sender.send(IpcChannelOn.COMMAND_CLOSE, err.toString())
+      console.error('Failed to start subprocess:', err)
+      zImageChild = null
+      resolve(-1)
+    })
   })
 }
 
+export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptions): Promise<void> {
+  isBatchStopped = false
+  const executablePath = getCorePath()
+  const executableDir = join(executablePath, '..')
+  const count = options.count || 1
+
+  console.log(`Starting batch generation: ${count} images`)
+
+  for (let i = 0; i < count; i++) {
+    if (isBatchStopped) {
+      console.log('Batch generation stopped by user.')
+      break
+    }
+
+    // dynamic filename
+    const timestamp = Date.now()
+    const filename = `out-${timestamp}-${i + 1}.png`
+    const outputPath = options.outputFolder
+      ? join(normalize(options.outputFolder), filename)
+      : join(executableDir, filename) // fallback
+
+    // Construct arguments
+    const args: string[] = []
+    args.push('-p', options.prompt)
+
+    if (options.negativePrompt) {
+      args.push('-n', options.negativePrompt)
+    }
+
+    // output
+    args.push('-o', outputPath)
+
+    if (options.width && options.height) {
+      args.push('-s', `${options.width},${options.height}`)
+    }
+
+    if (options.steps && options.steps !== 'auto') {
+      args.push('-l', `${options.steps}`)
+    }
+
+    if (options.seed && options.seed !== 'rand') {
+      args.push('-r', `${options.seed}`)
+    }
+
+    if (options.model) {
+      const modelPath = join(executableDir, '..', 'models', options.model)
+      args.push('-m', normalize(modelPath))
+    }
+
+    if (options.gpuId && options.gpuId !== 'auto') {
+      args.push('-g', `${options.gpuId}`)
+    }
+
+    console.log(`[Batch ${i + 1}/${count}] Executing ZImage:`, executablePath, args)
+
+    // Run and wait
+    await runSingleZImage(event, args, executablePath, executableDir)
+
+    // If stopped during execution, break
+    if (isBatchStopped)
+      break
+  }
+
+  // Final Close Event to reset frontend state
+  event.sender.send(IpcChannelOn.COMMAND_CLOSE, 0)
+}
+
 export async function killZImageProcess(): Promise<void> {
+  isBatchStopped = true
   if (zImageChild) {
     console.log('Killing ZImage process...')
     zImageChild.kill()
