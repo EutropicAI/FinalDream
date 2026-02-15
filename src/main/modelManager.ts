@@ -1,9 +1,10 @@
+import type { IpcMainInvokeEvent } from 'electron'
 import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { IpcChannelOn } from '@shared/const/ipc'
-import { app, BrowserWindow } from 'electron'
+import { getModelDir } from './getCorePath'
 
 const BASE_URL = 'https://modelscope.cn/api/v1/models/Tohrusky/z-image-turbo-ncnn/repo?Revision=master&FilePath='
 
@@ -35,13 +36,6 @@ export const PRESET_MODELS: Record<string, ModelFile[]> = {
   ],
 }
 
-function getModelDir(modelName: string): string {
-  const isDev = !app.isPackaged
-  return isDev
-    ? path.join(process.cwd(), 'resources', 'models', modelName)
-    : path.join(process.resourcesPath, 'models', modelName)
-}
-
 // Calculate SHA256 of a file
 async function calculateFileHash(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -54,18 +48,14 @@ async function calculateFileHash(filePath: string): Promise<string> {
 }
 
 // Check status of all files
-export async function checkModelStatus(
-  _event: any,
-  modelName = 'z-image-turbo',
-  fastCheck = true, // Default to fast check (existence only) for UI responsiveness
-): Promise<{ valid: boolean, missingFiles: string[] }> {
+export async function checkModelStatus(_, modelName = 'z-image-turbo', fastCheck = true): Promise<{ valid: boolean, missingFiles: string[] }> {
   // Ensure model exists in presets
   const requiredFiles = PRESET_MODELS[modelName]
   if (!requiredFiles) {
     return { valid: false, missingFiles: [] }
   }
 
-  const modelDir = getModelDir(modelName)
+  const modelDir = path.join(getModelDir(), modelName)
   if (!fs.existsSync(modelDir)) {
     return { valid: false, missingFiles: requiredFiles.map(f => f.name) }
   }
@@ -155,36 +145,31 @@ async function downloadFile(
 
 // Main download function exposed to IPC
 export async function downloadModels(
-  _event: any,
+  event: IpcMainInvokeEvent,
   modelName = 'z-image-turbo',
-  missingFiles: string[] = [], // Optional: strict list of files to download
+  missingFiles: string[] = [],
 ): Promise<{ success: boolean, error?: string }> {
   const requiredFiles = PRESET_MODELS[modelName]
   if (!requiredFiles) {
     return { success: false, error: `Unknown model: ${modelName}` }
   }
 
-  const modelDir = getModelDir(modelName)
+  const modelDir = path.join(getModelDir(), modelName)
   if (!fs.existsSync(modelDir)) {
     fs.mkdirSync(modelDir, { recursive: true })
   }
 
-  // If no specific missing list provided (or empty), re-check everything to be safe
-  // or allow client to pass the list to save time.
-  // For robustness, let's filter the REQUIRED_FILES based on the passed names if any.
   let filesToDownload = requiredFiles
   if (missingFiles.length > 0) {
     filesToDownload = requiredFiles.filter(f => missingFiles.includes(f.name))
   }
-
-  const mainWindow = BrowserWindow.getAllWindows()[0]
 
   try {
     for (const [index, file] of filesToDownload.entries()) {
       console.log(`Downloading ${file.name} (${index + 1}/${filesToDownload.length})...`)
 
       // Notify start of this file
-      mainWindow?.webContents.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, {
+      event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, {
         file: file.name,
         progress: 0,
         currentFileIndex: index + 1,
@@ -194,12 +179,7 @@ export async function downloadModels(
       await downloadFile(file.name, modelDir, (downloaded, total) => {
         const percentage = total > 0 ? (downloaded / total) * 100 : 0
 
-        // Throttling: Send update every 1% or 100MB to avoid IPC flooding?
-        // Or just let it fly? Naive UI progress bar is smooth.
-        // Let's throttle to every 0.5% or so.
-        // Actually, just sending it is usually fine for local IPC, but for 7GB file...
-        // Let's just send it.
-        mainWindow?.webContents.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, {
+        event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, {
           file: file.name,
           progress: percentage,
           currentFileIndex: index + 1,
