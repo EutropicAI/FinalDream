@@ -15,6 +15,3 @@ export function getCorePath(): string {
     return path.join(app.getAppPath(), '..', ZIMAGE_CORE_PATH)
   }
 }
-
-// Export a dummy checkPipPackage to satisfy test import if needed, or remove the test.
-// I will remove the test as it's not relevant.

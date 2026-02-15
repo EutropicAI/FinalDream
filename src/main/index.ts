@@ -5,6 +5,7 @@ import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeImage, shell, Tray 
 import appIcon from '../../resources/icon.png?asset'
 import trayIcon from '../../resources/tray.png?asset'
 import { startWatchingDirectory, stopWatchingDirectory } from './fileWatcher'
+import { checkModelStatus, downloadModels } from './modelManager'
 import { openDirectory } from './openDirectory'
 import { getZImageModels, killZImageProcess, runZImageCommand } from './zimage'
 
@@ -39,6 +40,10 @@ function createWindow(): void {
 
   ipcMain.handle(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, openDirectory)
   ipcMain.handle(IpcChannelInvoke.ZIMAGE_GET_MODELS, getZImageModels)
+
+  // Model Manager IPC
+  ipcMain.handle(IpcChannelInvoke.CHECK_MODEL_STATUS, checkModelStatus)
+  ipcMain.handle(IpcChannelInvoke.DOWNLOAD_MODEL, downloadModels)
 
   // File watcher handlers
   ipcMain.handle(IpcChannelInvoke.START_WATCHING_DIRECTORY, (_event, dirPath: string) => {

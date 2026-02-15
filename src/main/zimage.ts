@@ -2,11 +2,14 @@ import type { ZImageOptions } from '@shared/type/zimage'
 import type { IpcMainEvent } from 'electron'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { join, normalize } from 'node:path'
+
 import { IpcChannelOn } from '@shared/const/ipc'
 
 import { getCorePath } from './getCorePath'
+import { PRESET_MODELS } from './modelManager'
 
 let zImageChild: ChildProcessWithoutNullStreams | null = null
 
@@ -17,9 +20,34 @@ export async function getZImageModels(): Promise<string[]> {
 
   try {
     const entries = await readdir(modelsDir, { withFileTypes: true })
-    return entries
+    const folders = entries
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name)
+
+    // Filter out incomplete preset models
+    return folders.filter((modelName) => {
+      // If it's a known preset, verify strictly (fast check: items existence)
+      if (PRESET_MODELS[modelName]) {
+        const requiredFiles = PRESET_MODELS[modelName]
+        const modelPath = join(modelsDir, modelName)
+        
+        console.log(`[Validation] Checking model: ${modelName}`)
+        console.log(`[Validation] Path: ${modelPath}`)
+
+        // Find missing files
+        const missing = requiredFiles.filter(file => {
+           const exists = existsSync(join(modelPath, file.name))
+           if (!exists) console.log(`[Validation] Missing: ${join(modelPath, file.name)}`)
+           return !exists
+        })
+        
+        if (missing.length > 0) {
+          console.warn(`Model ${modelName} found but incomplete. Missing: ${missing.map(m => m.name).join(', ')}`)
+          return false
+        }
+      }
+      return true
+    })
   }
   catch (error) {
     console.error('Failed to read models directory:', error)

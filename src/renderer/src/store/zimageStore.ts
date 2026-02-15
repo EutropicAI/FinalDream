@@ -12,7 +12,7 @@ export const useZImageStore = defineStore(
     const prompt = ref('')
     const negativePrompt = ref('')
     const outputFolder = ref('')
-    const selectedModel = ref('z-image-turbo') // default
+    const selectedModel = ref('')
     const width = ref(1024)
     const height = ref(1024)
     const steps = ref<number | 'auto'>('auto')
@@ -24,12 +24,30 @@ export const useZImageStore = defineStore(
     const logs = ref('')
     const generatedImages = ref<Array<{ path: string, mtime: number }>>([])
 
+    // Model Status
+    const modelStatus = ref({ valid: true, missingFiles: [] as string[] })
+    const isDownloadingModel = ref(false)
+    const downloadProgress = ref({ file: '', progress: 0, current: 0, total: 0 })
+
+    // Model Zoo (Remote/Preset Models)
+    const remoteModels = ref([
+      {
+        id: 'z-image-turbo',
+        name: 'Z-Image Turbo',
+        description: 'Fast and efficient model with RL.',
+        size: '~18.8GB',
+      },
+      // Future models can be added here
+    ])
+
     const fetchModels = async (): Promise<void> => {
       try {
         const models = await ipcRenderer.invoke(IpcChannelInvoke.ZIMAGE_GET_MODELS)
         availableModels.value = models
+
+        // Ensure selected model is valid
         if (models.length > 0 && !models.includes(selectedModel.value)) {
-          // Keep default if exists, else pick first
+          // If current selection is invalid, try to fallback to z-image-turbo if available
           if (models.includes('z-image-turbo')) {
             selectedModel.value = 'z-image-turbo'
           }
@@ -120,6 +138,83 @@ export const useZImageStore = defineStore(
       }
     })
 
+    const checkModel = async (modelName = 'z-image-turbo'): Promise<boolean> => {
+      console.log(`[Store] Checking model status for: ${modelName}`)
+
+      try {
+        const result = await ipcRenderer.invoke(IpcChannelInvoke.CHECK_MODEL_STATUS, modelName)
+        console.log(`[Store] Check result:`, result)
+
+        modelStatus.value = result
+
+        // If valid, ensure it is in our available list
+        if (result.valid) {
+          if (!availableModels.value.includes(modelName)) {
+            console.log(`[Store] Model valid but not in list. Adding ${modelName}...`)
+            availableModels.value.push(modelName)
+            // Force reactivity if needed (though push should work)
+            availableModels.value = [...availableModels.value]
+          } else {
+            console.log(`[Store] Model valid and already in list.`)
+          }
+        } else {
+          console.log(`[Store] Model invalid.`)
+        }
+
+        return result.valid
+      }
+      catch (e) {
+        console.error('Failed to check model status:', e)
+        return false
+      }
+    }
+
+    const downloadModel = async (modelName = 'z-image-turbo'): Promise<void> => {
+      // If valid, just update status and return
+      // But we might want to force check?
+      // For now, assume if valid we don't download.
+      // Actually, let's allow "Repair" which bypasses this check in UI,
+      // but here we guard against accidental download.
+      // if (modelStatus.value.valid && modelStatus.value.missingFiles.length === 0) return
+
+      isDownloadingModel.value = true
+
+      // Listen for progress
+      const onProgress = (_event: any, data: any): void => {
+        // data: { file, progress, currentFileIndex, totalFiles }
+        downloadProgress.value = {
+          file: data.file,
+          progress: data.progress, // Currently unused in backend but we can infer or use file count
+          current: data.currentFileIndex,
+          total: data.totalFiles,
+        }
+      }
+      ipcRenderer.on(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, onProgress)
+
+      try {
+        // Pass missingFiles if available to optimize?
+        // For now, let main process handle logic (it re-checks)
+        const result = await ipcRenderer.invoke(IpcChannelInvoke.DOWNLOAD_MODEL, modelName, [...modelStatus.value.missingFiles])
+        if (result.success) {
+          modelStatus.value.valid = true
+          modelStatus.value.missingFiles = []
+          // Refresh local models list
+          await fetchModels()
+        }
+        else {
+          console.error('Download failed:', result.error)
+          logs.value += `\nModel download failed: ${result.error}`
+        }
+      }
+      catch (e) {
+        console.error('Download error:', e)
+      }
+      finally {
+        isDownloadingModel.value = false
+        ipcRenderer.removeAllListeners(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS)
+      }
+    }
+
     // Watch outputFolder changes and automatically manage file watcher
     watch(outputFolder, async (newFolder, oldFolder) => {
       console.log('[Store] Output folder changed:', { old: oldFolder, new: newFolder })
@@ -142,7 +237,6 @@ export const useZImageStore = defineStore(
         }
       }
     }, { immediate: true }) // immediate: true runs on first mount
-
 
     const stopGeneration = (): void => {
       if (isGenerating.value) {
@@ -175,6 +269,7 @@ export const useZImageStore = defineStore(
       seed,
       gpuId,
       availableModels,
+      remoteModels,
       isGenerating,
       logs,
       generatedImages,
@@ -184,6 +279,12 @@ export const useZImageStore = defineStore(
       stopGeneration,
       addGeneratedImage,
       clearGeneratedImages,
+      // Model properties
+      modelStatus,
+      isDownloadingModel,
+      downloadProgress,
+      checkModel,
+      downloadModel,
     }
   },
   {

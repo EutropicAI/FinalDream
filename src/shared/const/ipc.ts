@@ -7,6 +7,8 @@ export enum IpcChannelInvoke {
   START_WATCHING_DIRECTORY = 'ipc:invoke:start-watching-directory',
   STOP_WATCHING_DIRECTORY = 'ipc:invoke:stop-watching-directory',
   COPY_IMAGE = 'ipc:invoke:copy-image',
+  CHECK_MODEL_STATUS = 'ipc:invoke:check-model-status',
+  DOWNLOAD_MODEL = 'ipc:invoke:download-model',
 }
 
 /**
@@ -30,4 +32,5 @@ export enum IpcChannelOn {
   COMMAND_CLOSE = 'ipc:on:command-close-code',
   NEW_IMAGE_DETECTED = 'ipc:on:new-image-detected',
   IMAGE_REMOVED = 'ipc:on:image-removed',
+  MODEL_DOWNLOAD_PROGRESS = 'ipc:on:model-download-progress',
 }
