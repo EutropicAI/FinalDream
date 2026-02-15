@@ -154,7 +154,6 @@ async function downloadFile(
 }
 
 // Main download function exposed to IPC
-// Main download function exposed to IPC
 export async function downloadModels(
   _event: any,
   modelName = 'z-image-turbo',

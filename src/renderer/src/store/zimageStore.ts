@@ -170,13 +170,6 @@ export const useZImageStore = defineStore(
     }
 
     const downloadModel = async (modelName = 'z-image-turbo'): Promise<void> => {
-      // If valid, just update status and return
-      // But we might want to force check?
-      // For now, assume if valid we don't download.
-      // Actually, let's allow "Repair" which bypasses this check in UI,
-      // but here we guard against accidental download.
-      // if (modelStatus.value.valid && modelStatus.value.missingFiles.length === 0) return
-
       isDownloadingModel.value = true
 
       // Listen for progress
