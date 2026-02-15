@@ -602,12 +602,32 @@ $radius-sm: 12px;
 .glass-drawer {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
+
+  :deep(.n-drawer-body-content-wrapper) {
+    overflow: hidden !important; /* Prevent drawer from scrolling */
+    padding: 0 !important; /* Remove default padding to let log fill */
+  }
 }
 
 .log-container {
   padding: 20px;
   height: 100%;
+  box-sizing: border-box;
   font-family: 'Menlo', 'Monaco', monospace;
+  overflow: hidden; /* Ensure container doesn't scroll */
+  display: flex;
+  flex-direction: column;
+
+  :deep(.n-log) {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Target the actual scrollable area in NLog */
+  :deep(.n-log-loader) {
+    height: 100% !important;
+    max-height: none !important;
+  }
 }
 </style>
 
