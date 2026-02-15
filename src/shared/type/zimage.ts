@@ -9,3 +9,10 @@ export interface ZImageOptions {
   model?: string
   gpuId?: number | 'auto'
 }
+
+export interface ZImageModelDownloadProgress {
+  file: string
+  progress: number
+  currentFileIndex: number
+  totalFiles: number
+}

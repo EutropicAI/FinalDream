@@ -1,3 +1,4 @@
+import type { ZImageModelDownloadProgress } from '@shared/type/zimage'
 import type { IpcMainInvokeEvent } from 'electron'
 import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
@@ -169,22 +170,24 @@ export async function downloadModels(
       console.log(`Downloading ${file.name} (${index + 1}/${filesToDownload.length})...`)
 
       // Notify start of this file
-      event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, {
+      const progressData: ZImageModelDownloadProgress = {
         file: file.name,
         progress: 0,
         currentFileIndex: index + 1,
         totalFiles: filesToDownload.length,
-      })
+      }
+      event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
 
       await downloadFile(file.name, modelDir, (downloaded, total) => {
         const percentage = total > 0 ? (downloaded / total) * 100 : 0
 
-        event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, {
+        const progressData: ZImageModelDownloadProgress = {
           file: file.name,
           progress: percentage,
           currentFileIndex: index + 1,
           totalFiles: filesToDownload.length,
-        })
+        }
+        event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
       })
 
       // Verify hash immediately after download

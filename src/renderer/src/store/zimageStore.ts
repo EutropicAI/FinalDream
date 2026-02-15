@@ -1,4 +1,4 @@
-import type { ZImageOptions } from '@shared/type/zimage'
+import type { ZImageModelDownloadProgress, ZImageOptions } from '@shared/type/zimage'
 import { IpcChannelInvoke, IpcChannelOn, IpcChannelSend } from '@shared/const/ipc'
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
@@ -27,7 +27,7 @@ export const useZImageStore = defineStore(
     // Model Status
     const modelStatus = ref<Record<string, { valid: boolean, missingFiles: string[] }>>({})
     const isDownloadingModel = ref<Record<string, boolean>>({}) // Track downloading state per model
-    const downloadProgress = ref({ file: '', progress: 0, current: 0, total: 0 })
+    const downloadProgress = ref<ZImageModelDownloadProgress>({ file: '', progress: 0, currentFileIndex: 0, totalFiles: 0 })
 
     // Model Zoo (Remote/Preset Models)
     const remoteModels = ref([
@@ -180,14 +180,9 @@ export const useZImageStore = defineStore(
       isDownloadingModel.value[modelName] = true
 
       // Listen for progress
-      const onProgress = (_event: any, data: any): void => {
-        // data: { file, progress, currentFileIndex, totalFiles }
-        downloadProgress.value = {
-          file: data.file,
-          progress: data.progress, // Currently unused in backend but we can infer or use file count
-          current: data.currentFileIndex,
-          total: data.totalFiles,
-        }
+      // Listen for progress
+      const onProgress = (_event: any, data: ZImageModelDownloadProgress): void => {
+        downloadProgress.value = data
       }
       ipcRenderer.on(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, onProgress)
 

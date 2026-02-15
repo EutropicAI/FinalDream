@@ -468,13 +468,13 @@ const gridStyle = computed(() => {
           <div class="mb-2 flex justify-between text-xs text-gray-500">
             <span>{{ t('common.downloadStatus', {
               file: downloadProgress.file,
-              current: downloadProgress.current,
-              total: downloadProgress.total,
+              current: downloadProgress.currentFileIndex,
+              total: downloadProgress.totalFiles,
             }) }}</span>
           </div>
           <NProgress
             type="line"
-            :percentage="Math.min(100, Math.round(((downloadProgress.current - 1 + (downloadProgress.progress / 100)) / downloadProgress.total) * 100))"
+            :percentage="Math.min(100, Math.round(((downloadProgress.currentFileIndex - 1 + (downloadProgress.progress / 100)) / downloadProgress.totalFiles) * 100))"
             indicator-placement="inside"
             processing
           />
