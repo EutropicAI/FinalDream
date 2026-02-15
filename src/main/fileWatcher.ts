@@ -36,10 +36,6 @@ export function startWatchingDirectory(
     console.log(`Found ${existingFiles.length} files in directory`)
 
     // Get stats and sort by mtime (oldest first)
-    // Frontend uses unshift so we want oldest -> newest so final array is [newest, ..., oldest]
-    // Wait, if frontend unshifts, then we want to send OLDEST first, then NEWEST last.
-    // Yes. So sort by time ascending.
-
     const fileStats = existingFiles
       .filter(file => isImageFile(file))
       .map((file) => {
@@ -62,7 +58,10 @@ export function startWatchingDirectory(
     if (fileStats.length > 0) {
       console.log(`Sending ${fileStats.length} existing images to frontend`)
       fileStats.forEach((item) => {
-        mainWindow.webContents.send(IpcChannelOn.NEW_IMAGE_DETECTED, item.path)
+        mainWindow.webContents.send(IpcChannelOn.NEW_IMAGE_DETECTED, {
+          path: item.path,
+          mtime: item.mtime,
+        })
       })
     }
   }
@@ -89,17 +88,33 @@ export function startWatchingDirectory(
     debounceTimer = setTimeout(() => {
       // Process all pending files
       pendingFiles.forEach((pendingPath) => {
-        // Check if file exists and is not already detected
-        if (fs.existsSync(pendingPath) && !detectedFiles.has(pendingPath)) {
-          // Double check it's a valid file (not temp/partial)
+        const fileExists = fs.existsSync(pendingPath)
+        const isDetected = detectedFiles.has(pendingPath)
+
+        // Case 1: File Added (Exists AND Not Detected)
+        if (fileExists && !isDetected) {
           try {
-            // For now just add it. Size check might be needed for very large files being written.
+            const stats = fs.statSync(pendingPath)
             detectedFiles.add(pendingPath)
             console.log(`New image detected: ${pendingPath}`)
-            mainWindow.webContents.send(IpcChannelOn.NEW_IMAGE_DETECTED, pendingPath)
+            mainWindow.webContents.send(IpcChannelOn.NEW_IMAGE_DETECTED, {
+              path: pendingPath,
+              mtime: stats.mtimeMs,
+            })
           }
           catch (e) {
             console.error(`Error processing new file ${pendingPath}:`, e)
+          }
+        }
+        // Case 2: File Removed (Does Not Exist AND Detected)
+        else if (!fileExists && isDetected) {
+          try {
+            detectedFiles.delete(pendingPath)
+            console.log(`Image removed: ${pendingPath}`)
+            mainWindow.webContents.send(IpcChannelOn.IMAGE_REMOVED, pendingPath)
+          }
+          catch (e) {
+            console.error(`Error processing removed file ${pendingPath}:`, e)
           }
         }
       })

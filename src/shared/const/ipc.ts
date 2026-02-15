@@ -29,4 +29,5 @@ export enum IpcChannelOn {
   COMMAND_STDERR = 'ipc:on:command-stderr',
   COMMAND_CLOSE = 'ipc:on:command-close-code',
   NEW_IMAGE_DETECTED = 'ipc:on:new-image-detected',
+  IMAGE_REMOVED = 'ipc:on:image-removed',
 }

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { Ref } from 'vue'
-import { IpcChannelInvoke } from '@shared/const/ipc'
+import { IpcChannelInvoke, IpcChannelOn } from '@shared/const/ipc'
 import {
   FolderOpenOutline,
   ImageOutline,
@@ -69,12 +69,24 @@ onMounted(() => {
     })
     resizeObserver.observe(galleryRef.value)
   }
+
+  // Listen for image removal
+  ipcRenderer.on(IpcChannelOn.IMAGE_REMOVED, (_event, imagePath: string) => {
+    // Check by .path property
+    const index = generatedImages.value.findIndex(img => img.path === imagePath || img.path.includes(imagePath))
+    if (index !== -1) {
+      generatedImages.value.splice(index, 1)
+      message.info('Image removed')
+    }
+  })
 })
 
 onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect()
   }
+  // Cleanup IPC listeners if necessary (though usually auto-cleaned on window close)
+  ipcRenderer.removeAllListeners(IpcChannelOn.IMAGE_REMOVED)
 })
 
 // Log Scrolling
@@ -159,22 +171,27 @@ const gpuIdStr = computed({
   },
 })
 
+// Logic: Stepped Hard-Coded Grid
+// <= 4 images: 2 columns (1/2 width)
+// 5 - 15 images: 5 columns (1/5 width)
+// > 15 images: 10 columns (1/10 width)
 const gridStyle = computed(() => {
   const count = generatedImages.value.length
-  const width = containerWidth.value || 1200
 
-  // Logic:
-  // Base ideal size starts at 280px (large thumbnails)
-  // Decays to 100px as count increases (more density)
-  // Decay factor: 5px per image
-  const targetSize = Math.max(100, 280 - count * 5)
-
-  // Calculate columns based on container width
-  const columns = Math.max(2, Math.floor(width / targetSize))
+  let columns = 2
+  if (count > 15) {
+    columns = 10
+  }
+  else if (count > 4) {
+    columns = 5
+  }
+  else {
+    columns = 2
+  }
 
   return {
     gridTemplateColumns: `repeat(${columns}, 1fr)`,
-    gap: columns > 8 ? '8px' : '16px',
+    gap: '0',
   }
 })
 </script>
@@ -258,10 +275,10 @@ const gridStyle = computed(() => {
             v-for="(img, index) in generatedImages"
             :key="index"
             class="image-wrapper"
-            @contextmenu.prevent="handleContextMenu(img)"
+            @contextmenu.prevent="handleContextMenu(img.path)"
           >
             <NImage
-              :src="img"
+              :src="img.path"
               object-fit="cover"
               class="gallery-image"
               lazy
@@ -448,7 +465,7 @@ $radius-sm: 12px;
 .gallery-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 0; /* Remove padding to fill screen */
   scroll-behavior: smooth;
 
   /* Hide scrollbar but keep functionality */
@@ -464,27 +481,27 @@ $radius-sm: 12px;
 .image-grid {
   display: grid;
   /* grid-template-columns and gap handled by dynamic style */
-  max-width: 1600px;
-  margin: 0 auto;
+  width: 100%; /* Fill full width */
+  margin: 0;
 }
 
 .image-wrapper {
   aspect-ratio: 1;
-  border-radius: 8px; /* Slightly sharper radius for iOS feel */
+  border-radius: 0; /* No radius */
   overflow: hidden;
   background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Softer shadow */
+  box-shadow: none; /* No shadow */
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
 
   /* Ensure content fills the wrapper */
   display: flex;
+  border: 0.5px solid rgba(0,0,0,0.05); /* Subtle separator */
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     z-index: 1;
+    filter: brightness(1.1);
   }
 
   /* Target the NImage component root */
@@ -500,10 +517,6 @@ $radius-sm: 12px;
     height: 100% !important;
     object-fit: cover !important;
     transition: transform 0.5s ease;
-  }
-
-  &:hover :deep(img) {
-    transform: scale(1.05);
   }
 }
 

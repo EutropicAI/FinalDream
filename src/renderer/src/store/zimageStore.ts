@@ -21,7 +21,7 @@ export const useZImageStore = defineStore(
     const availableModels = ref<string[]>([])
     const isGenerating = ref(false)
     const logs = ref('')
-    const generatedImages = ref<string[]>([])
+    const generatedImages = ref<Array<{ path: string, mtime: number }>>([])
 
     const fetchModels = async (): Promise<void> => {
       try {
@@ -106,15 +106,16 @@ export const useZImageStore = defineStore(
     }
 
     // Listen for new images from file watcher
-    ipcRenderer.on(IpcChannelOn.NEW_IMAGE_DETECTED, (_event: any, imagePath: string) => {
-      console.log('[Store] New image detected:', imagePath)
-      console.log('[Store] Current generatedImages:', generatedImages.value)
-      if (!generatedImages.value.includes(imagePath)) {
-        generatedImages.value.unshift(imagePath) // Add to beginning
-        console.log('[Store] Image added. New count:', generatedImages.value.length)
-      }
-      else {
-        console.log('[Store] Image already in list, skipping')
+    ipcRenderer.on(IpcChannelOn.NEW_IMAGE_DETECTED, (_event: any, image: { path: string, mtime: number }) => {
+      console.log('[Store] New image detected:', image.path)
+
+      // Check if already exists by path
+      const exists = generatedImages.value.some(img => img.path === image.path)
+      if (!exists) {
+        generatedImages.value.push(image)
+        // Sort by mtime descending (Newest first)
+        generatedImages.value.sort((a, b) => b.mtime - a.mtime)
+        console.log('[Store] Image added and sorted. Count:', generatedImages.value.length)
       }
     })
 
@@ -141,9 +142,11 @@ export const useZImageStore = defineStore(
       }
     }, { immediate: true }) // immediate: true runs on first mount
 
-    const addGeneratedImage = (path: string): void => {
-      if (!generatedImages.value.includes(path)) {
-        generatedImages.value.unshift(path)
+    const addGeneratedImage = (image: { path: string, mtime: number }): void => {
+      const exists = generatedImages.value.some(img => img.path === image.path)
+      if (!exists) {
+        generatedImages.value.push(image)
+        generatedImages.value.sort((a, b) => b.mtime - a.mtime)
       }
     }
 
