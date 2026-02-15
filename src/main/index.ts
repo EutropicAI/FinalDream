@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { IpcChannelInvoke, IpcChannelSend } from '@shared/const/ipc'
-import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
 import appIcon from '../../resources/icon.png?asset'
 import trayIcon from '../../resources/tray.png?asset'
 import { startWatchingDirectory, stopWatchingDirectory } from './fileWatcher'
@@ -49,6 +49,18 @@ function createWindow(): void {
 
   ipcMain.handle(IpcChannelInvoke.STOP_WATCHING_DIRECTORY, () => {
     stopWatchingDirectory()
+  })
+
+  ipcMain.handle(IpcChannelInvoke.COPY_IMAGE, async (_event, imagePath: string) => {
+    try {
+      const image = nativeImage.createFromPath(imagePath)
+      clipboard.writeImage(image)
+      return { success: true }
+    }
+    catch (error) {
+      console.error('Failed to copy image:', error)
+      return { success: false, error: String(error) }
+    }
   })
 
   ipcMain.on(IpcChannelSend.MINIMIZE, () => {

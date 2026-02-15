@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { Ref } from 'vue'
+import { IpcChannelInvoke } from '@shared/const/ipc'
 import {
   FolderOpenOutline,
   ImageOutline,
@@ -19,6 +20,7 @@ import {
   NLog,
   NModal,
   NSelect,
+  useMessage,
 } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
@@ -42,6 +44,9 @@ const {
   outputFolder,
 } = storeToRefs(zImageStore)
 const { fetchModels, startGeneration, selectOutputFolder } = zImageStore
+
+const message = useMessage()
+const { ipcRenderer } = window.electron
 
 // Local State
 const showSettings = ref(false)
@@ -74,6 +79,22 @@ function handleGenerate(): void {
 // TODO: Implement actual stop logic if backed by store
 function handleStop(): void {
   console.log('Stop requested (Not implemented in backend yet)')
+}
+
+async function handleContextMenu(imagePath: string): Promise<void> {
+  try {
+    const result = await ipcRenderer.invoke(IpcChannelInvoke.COPY_IMAGE, imagePath)
+    if (result.success) {
+      message.success('Image copied to clipboard')
+    }
+    else {
+      message.error('Failed to copy image')
+    }
+  }
+  catch (error) {
+    console.error(error)
+    message.error('Failed to copy image')
+  }
 }
 
 // Computed for Select options
@@ -117,6 +138,18 @@ const gpuIdStr = computed({
       gpuId.value = Number.isNaN(num) ? 'auto' : num
     }
   },
+})
+
+const gridStyle = computed(() => {
+  const count = generatedImages.value.length
+  // Logic: As count increases, min width decreases -> fits more columns
+  // Min size: 100px
+  // Start size: 360px
+  // Decay: 10px per image
+  const minSize = Math.max(120, 360 - count * 10)
+  return {
+    gridTemplateColumns: `repeat(auto-fill, minmax(${minSize}px, 1fr))`,
+  }
 })
 </script>
 
@@ -194,13 +227,19 @@ const gpuIdStr = computed({
     <!-- Main Content (Image Grid) -->
     <main class="gallery-content">
       <NImageGroup>
-        <div v-if="generatedImages.length > 0" class="image-grid">
-          <div v-for="(img, index) in generatedImages" :key="index" class="image-wrapper">
+        <div v-if="generatedImages.length > 0" class="image-grid" :style="gridStyle">
+          <div
+            v-for="(img, index) in generatedImages"
+            :key="index"
+            class="image-wrapper"
+            @contextmenu.prevent="handleContextMenu(img)"
+          >
             <NImage
               :src="img"
               object-fit="cover"
               class="gallery-image"
-              :intersection-observer-options="{ rootMargin: '100px' }"
+              lazy
+              :intersection-observer-options="{ rootMargin: '200px' }"
             />
           </div>
         </div>
@@ -531,5 +570,17 @@ $radius-sm: 12px;
   padding: 20px;
   height: 100%;
   font-family: 'Menlo', 'Monaco', monospace;
+}
+</style>
+
+<style>
+/* Global overrides for NImage to hide toolbar and fix styling */
+.n-image-preview-toolbar {
+  display: none !important;
+}
+
+.n-image img {
+  width: 100%;
+  height: 100%;
 }
 </style>

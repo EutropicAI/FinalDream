@@ -6,6 +6,7 @@ export enum IpcChannelInvoke {
   ZIMAGE_GET_MODELS = 'ipc:invoke:zimage-get-models',
   START_WATCHING_DIRECTORY = 'ipc:invoke:start-watching-directory',
   STOP_WATCHING_DIRECTORY = 'ipc:invoke:stop-watching-directory',
+  COPY_IMAGE = 'ipc:invoke:copy-image',
 }
 
 /**
