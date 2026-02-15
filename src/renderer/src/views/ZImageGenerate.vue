@@ -24,10 +24,16 @@ import {
 } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useI18nStore } from '../store/i18nStore'
 import { useZImageStore } from '../store/zimageStore'
 
 // Store Access
 const zImageStore = useZImageStore()
+const i18nStore = useI18nStore()
+const { t } = useI18n()
+const { locale } = storeToRefs(i18nStore)
+
 const {
   isGenerating,
   logs,
@@ -125,20 +131,25 @@ async function handleContextMenu(imagePath: string): Promise<void> {
   try {
     const result = await ipcRenderer.invoke(IpcChannelInvoke.COPY_IMAGE, imagePath)
     if (result.success) {
-      message.success('Image copied to clipboard')
+      message.success(t('common.copySuccess'))
     }
     else {
-      message.error('Failed to copy image')
+      message.error(t('common.copyFail'))
     }
   }
   catch (error) {
     console.error(error)
-    message.error('Failed to copy image')
+    message.error(t('common.copyFail'))
   }
 }
 
 // Computed for Select options
 const modelOptions = computed(() => availableModels.value.map(m => ({ label: m, value: m })))
+
+const languageOptions = [
+  { label: 'English', value: 'en' },
+  { label: '中文', value: 'zh' },
+]
 
 // Steps/Seed converters (similar to old Settings logic)
 const stepsStr = computed({
@@ -223,7 +234,7 @@ const gridStyle = computed(() => {
         <div class="prompt-container">
           <NInput
             v-model:value="prompt"
-            placeholder="Describe your dream..."
+            :placeholder="t('placeholder.prompt')"
             class="glass-input"
             round
             size="large"
@@ -248,7 +259,7 @@ const gridStyle = computed(() => {
             <template #icon>
               <NIcon><PlayOutline /></NIcon>
             </template>
-            Generate
+            {{ t('common.generate') }}
           </NButton>
 
           <NButton
@@ -262,7 +273,7 @@ const gridStyle = computed(() => {
             <template #icon>
               <NIcon><PauseOutline /></NIcon>
             </template>
-            Stop
+            {{ t('common.stop') }}
           </NButton>
 
           <NButton quaternary circle size="large" class="glass-button" @click="showLogDrawer = true">
@@ -300,8 +311,8 @@ const gridStyle = computed(() => {
             <div class="empty-icon">
               🎨
             </div>
-            <h2>Start Dreaming</h2>
-            <p>Enter a prompt above to generate your first masterpiece.</p>
+            <h2>{{ t('common.startDreaming') }}</h2>
+            <p>{{ t('common.startDreamingDesc') }}</p>
           </div>
         </div>
       </NImageGroup>
@@ -318,13 +329,19 @@ const gridStyle = computed(() => {
     <NModal v-model:show="showSettings">
       <div class="settings-card glass-modal">
         <div class="settings-grid">
+          <!-- Language -->
+          <div class="setting-item full-width">
+            <label>{{ t('settings.language') }}</label>
+            <NSelect v-model:value="locale" :options="languageOptions" class="glass-select" />
+          </div>
+
           <!-- Negative Prompt -->
           <div class="setting-item full-width">
-            <label>Negative Prompt</label>
+            <label>{{ t('settings.negativePrompt') }}</label>
             <NInput
               v-model:value="negativePrompt"
               type="textarea"
-              placeholder="What to avoid..."
+              :placeholder="t('placeholder.negativePrompt')"
               :rows="2"
               class="glass-input-sm"
             />
@@ -332,41 +349,41 @@ const gridStyle = computed(() => {
 
           <!-- Model -->
           <div class="setting-item full-width">
-            <label>Model</label>
+            <label>{{ t('settings.model') }}</label>
             <NSelect v-model:value="selectedModel" :options="modelOptions" class="glass-select" />
           </div>
 
           <!-- Dimensions -->
           <div class="setting-item">
-            <label>Width</label>
+            <label>{{ t('settings.width') }}</label>
             <NInputNumber v-model:value="width" :step="64" class="glass-input-sm" />
           </div>
           <div class="setting-item">
-            <label>Height</label>
+            <label>{{ t('settings.height') }}</label>
             <NInputNumber v-model:value="height" :step="64" class="glass-input-sm" />
           </div>
 
           <!-- Steps -->
           <div class="setting-item">
-            <label>Steps</label>
-            <NInput v-model:value="stepsStr" placeholder="auto" class="glass-input-sm" />
+            <label>{{ t('settings.steps') }}</label>
+            <NInput v-model:value="stepsStr" :placeholder="t('settings.auto')" class="glass-input-sm" />
           </div>
 
           <!-- Seed -->
           <div class="setting-item">
-            <label>Seed</label>
-            <NInput v-model:value="seedStr" placeholder="rand" class="glass-input-sm" />
+            <label>{{ t('settings.seed') }}</label>
+            <NInput v-model:value="seedStr" :placeholder="t('settings.rand')" class="glass-input-sm" />
           </div>
 
           <!-- GPU -->
           <div class="setting-item full-width">
-            <label>GPU ID</label>
-            <NInput v-model:value="gpuIdStr" placeholder="auto" class="glass-input-sm" />
+            <label>{{ t('settings.gpuId') }}</label>
+            <NInput v-model:value="gpuIdStr" :placeholder="t('settings.auto')" class="glass-input-sm" />
           </div>
 
           <!-- Output -->
           <div class="setting-item full-width">
-            <label>Output Folder</label>
+            <label>{{ t('settings.outputFolder') }}</label>
             <div class="folder-input">
               <NInput v-model:value="outputFolder" readonly class="glass-input-sm" />
               <NButton class="glass-button-sm" @click="selectOutputFolder">

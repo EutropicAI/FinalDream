@@ -2,6 +2,7 @@ import type { ZImageOptions } from '@shared/type/zimage'
 import { IpcChannelInvoke, IpcChannelOn, IpcChannelSend } from '@shared/const/ipc'
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import i18n from '../plugins/i18n'
 
 const { ipcRenderer } = window.electron
 
@@ -142,11 +143,12 @@ export const useZImageStore = defineStore(
       }
     }, { immediate: true }) // immediate: true runs on first mount
 
+
     const stopGeneration = (): void => {
       if (isGenerating.value) {
         ipcRenderer.send(IpcChannelSend.KILL_COMMAND)
         isGenerating.value = false // Optimistically update state
-        logs.value += '\nStopping generation...'
+        logs.value += `\n${i18n.global.t('common.stopping')}`
       }
     }
 
