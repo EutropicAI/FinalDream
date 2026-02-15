@@ -308,10 +308,6 @@ const gridStyle = computed(() => {
     <!-- Settings Modal -->
     <NModal v-model:show="showSettings">
       <div class="settings-card glass-modal">
-        <div class="modal-header">
-          <h3>Configuration</h3>
-        </div>
-
         <div class="settings-grid">
           <!-- Negative Prompt -->
           <div class="setting-item full-width">
@@ -564,18 +560,6 @@ $radius-sm: 12px;
   box-shadow: 0 24px 64px rgba(0,0,0,0.2);
   width: 500px;
   max-width: 90vw;
-}
-
-.modal-header {
-  margin-bottom: 24px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  padding-bottom: 16px;
-
-  h3 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-  }
 }
 
 .settings-grid {
