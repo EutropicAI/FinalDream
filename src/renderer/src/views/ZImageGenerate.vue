@@ -23,7 +23,7 @@ import {
   useMessage,
 } from 'naive-ui'
 import { storeToRefs } from 'pinia'
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useZImageStore } from '../store/zimageStore'
 
 // Store Access
@@ -52,10 +52,29 @@ const { ipcRenderer } = window.electron
 const showSettings = ref(false)
 const showLogDrawer = inject<Ref<boolean>>('showLogsDrawer')!
 const logRef = ref<InstanceType<typeof NLog> | null>(null)
+const galleryRef = ref<HTMLElement | null>(null)
+const containerWidth = ref(1200) // Default start width
+let resizeObserver: ResizeObserver | null = null
 
 // Lifecycle
 onMounted(() => {
   fetchModels()
+
+  // Setup ResizeObserver
+  if (galleryRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        containerWidth.value = entry.contentRect.width
+      }
+    })
+    resizeObserver.observe(galleryRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
 })
 
 // Log Scrolling
@@ -142,13 +161,20 @@ const gpuIdStr = computed({
 
 const gridStyle = computed(() => {
   const count = generatedImages.value.length
-  // Logic: As count increases, min width decreases -> fits more columns
-  // Min size: 100px
-  // Start size: 360px
-  // Decay: 10px per image
-  const minSize = Math.max(120, 360 - count * 10)
+  const width = containerWidth.value || 1200
+
+  // Logic:
+  // Base ideal size starts at 280px (large thumbnails)
+  // Decays to 100px as count increases (more density)
+  // Decay factor: 5px per image
+  const targetSize = Math.max(100, 280 - count * 5)
+
+  // Calculate columns based on container width
+  const columns = Math.max(2, Math.floor(width / targetSize))
+
   return {
-    gridTemplateColumns: `repeat(auto-fill, minmax(${minSize}px, 1fr))`,
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gap: columns > 8 ? '8px' : '16px',
   }
 })
 </script>
@@ -225,7 +251,7 @@ const gridStyle = computed(() => {
     </header>
 
     <!-- Main Content (Image Grid) -->
-    <main class="gallery-content">
+    <main ref="galleryRef" class="gallery-content">
       <NImageGroup>
         <div v-if="generatedImages.length > 0" class="image-grid" :style="gridStyle">
           <div
@@ -437,25 +463,25 @@ $radius-sm: 12px;
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  /* grid-template-columns and gap handled by dynamic style */
   max-width: 1600px;
   margin: 0 auto;
 }
 
 .image-wrapper {
   aspect-ratio: 1;
-  border-radius: $radius-md;
+  border-radius: 8px; /* Slightly sharper radius for iOS feel */
   overflow: hidden;
   background: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Softer shadow */
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 1;
   }
 
   :deep(img) {
@@ -465,7 +491,7 @@ $radius-sm: 12px;
   }
 
   &:hover :deep(img) {
-    transform: scale(1.02);
+    transform: scale(1.05);
   }
 }
 
