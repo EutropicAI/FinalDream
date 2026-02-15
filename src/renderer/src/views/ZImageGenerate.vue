@@ -56,7 +56,7 @@ const {
   isDownloadingModel,
   downloadProgress,
 } = storeToRefs(zImageStore)
-const { fetchModels, startGeneration, stopGeneration, selectOutputFolder, checkModel, downloadModel } = zImageStore
+const { fetchModels, startGeneration, stopGeneration, selectOutputFolder, checkModel, checkAllModels, downloadModel } = zImageStore
 
 const message = useMessage()
 const { ipcRenderer } = window.electron
@@ -71,8 +71,13 @@ let resizeObserver: ResizeObserver | null = null
 
 // Lifecycle
 onMounted(async () => {
-  await checkModel() // Check if model exists
-  fetchModels()
+  await fetchModels()
+  checkAllModels() // Check all zoo models status
+
+  // If we have a selected model, check it specifically (in case it's local custom)
+  if (selectedModel.value && !availableModels.value.includes(selectedModel.value)) {
+    checkModel(selectedModel.value)
+  }
 
   // Setup ResizeObserver
   if (galleryRef.value) {
@@ -115,7 +120,6 @@ watch(logs, async () => {
 })
 
 // Actions
-// Actions
 function handleGenerate(): void {
   if (!prompt.value)
     return
@@ -125,7 +129,11 @@ function handleGenerate(): void {
     return
   }
 
-  const result = startGeneration()
+  const result = startGeneration({
+    onError: (_code) => {
+      message.error(t('common.generationFailed'))
+    },
+  })
   if (!result.success && result.message) {
     message.error(result.message)
   }
@@ -386,7 +394,7 @@ const gridStyle = computed(() => {
                     size="small"
                     :type="availableModels.includes(model.id) ? 'success' : 'primary'"
                     secondary
-                    :loading="isDownloadingModel && modelStatus.missingFiles.length > 0"
+                    :loading="!!isDownloadingModel[model.id] && !!modelStatus[model.id] && modelStatus[model.id]?.missingFiles.length > 0"
                     @click="() => {
                       if (!availableModels.includes(model.id)) {
                         // Trigger check/download logic
@@ -442,7 +450,7 @@ const gridStyle = computed(() => {
 
     <!-- Model Download Modal (Non-closable) -->
     <NModal
-      :show="isDownloadingModel"
+      :show="Object.values(isDownloadingModel).some(Boolean)"
       :mask-closable="false"
       :close-on-esc="false"
       transform-origin="center"
@@ -739,29 +747,29 @@ $radius-sm: 12px;
   margin-bottom: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.02);
   transition: all 0.2s ease;
-  
+
   &:last-child { margin-bottom: 0; }
   &:hover {
     background: rgba(255,255,255,0.8);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
-  
+
   .zoo-info {
     flex: 1;
-    .zoo-name { 
-      font-weight: 600; 
-      font-size: 15px; 
+    .zoo-name {
+      font-weight: 600;
+      font-size: 15px;
       color: #333;
       margin-bottom: 2px;
     }
-    .zoo-desc { 
-      font-size: 12px; 
-      color: #666; 
+    .zoo-desc {
+      font-size: 12px;
+      color: #666;
       line-height: 1.4;
     }
   }
-  
+
   .zoo-actions {
     margin-left: 16px;
   }

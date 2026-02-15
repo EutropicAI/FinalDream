@@ -30,17 +30,18 @@ export async function getZImageModels(): Promise<string[]> {
       if (PRESET_MODELS[modelName]) {
         const requiredFiles = PRESET_MODELS[modelName]
         const modelPath = join(modelsDir, modelName)
-        
+
         console.log(`[Validation] Checking model: ${modelName}`)
         console.log(`[Validation] Path: ${modelPath}`)
 
         // Find missing files
-        const missing = requiredFiles.filter(file => {
-           const exists = existsSync(join(modelPath, file.name))
-           if (!exists) console.log(`[Validation] Missing: ${join(modelPath, file.name)}`)
-           return !exists
+        const missing = requiredFiles.filter((file) => {
+          const exists = existsSync(join(modelPath, file.name))
+          if (!exists)
+            console.log(`[Validation] Missing: ${join(modelPath, file.name)}`)
+          return !exists
         })
-        
+
         if (missing.length > 0) {
           console.warn(`Model ${modelName} found but incomplete. Missing: ${missing.map(m => m.name).join(', ')}`)
           return false

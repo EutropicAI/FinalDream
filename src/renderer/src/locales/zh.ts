@@ -18,6 +18,9 @@ export const zh = {
     modelZoo: '模型库',
     installed: '已安装',
     install: '安装',
+    selectModelFirst: '请先在设置中选择模型。',
+    selectOutputFolderFirst: '生成图片前请先在设置中选择输出目录。',
+    generationFailed: '生成失败，请查看日志了解详情。',
   },
   settings: {
     title: '设置',

@@ -18,6 +18,9 @@ export const en = {
     modelZoo: 'Model Zoo',
     installed: 'Installed',
     install: 'Install',
+    selectModelFirst: 'Please select a model in Settings first.',
+    selectOutputFolderFirst: 'Please set an output folder in Settings before generating images.',
+    generationFailed: 'Generation failed. Please check logs for details.',
   },
   settings: {
     title: 'Settings',
