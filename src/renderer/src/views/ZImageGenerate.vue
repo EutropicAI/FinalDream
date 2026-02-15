@@ -10,18 +10,7 @@ import {
   SettingsOutline,
 } from '@vicons/ionicons5'
 import {
-  NButton,
-  NCard,
-  NDrawer,
-  NIcon,
-  NImage,
-  NImageGroup,
-  NInput,
-  NInputNumber,
   NLog,
-  NModal,
-  NProgress,
-  NSelect,
   useMessage,
 } from 'naive-ui'
 import { storeToRefs } from 'pinia'
