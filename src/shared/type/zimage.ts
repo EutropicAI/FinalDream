@@ -8,6 +8,7 @@ export interface ZImageOptions {
   seed?: number | 'rand'
   model?: string
   gpuId?: number | 'auto'
+  count?: number
 }
 
 export interface ZImageModelDownloadProgress {

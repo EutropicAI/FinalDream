@@ -102,6 +102,11 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
     args.push('-g', `${options.gpuId}`)
   }
 
+  // -c count
+  if (options.count && options.count > 1) {
+    args.push('-c', `${options.count}`)
+  }
+
   console.log('Executing ZImage:', executablePath, args)
 
   // kill previous instance if running? Maybe not, allow parallel?

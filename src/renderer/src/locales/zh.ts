@@ -31,6 +31,7 @@ export const zh = {
     height: '高度',
     steps: '步数',
     seed: '种子',
+    count: '抽卡数量',
     gpuId: 'GPU ID',
     negativePrompt: '反向提示词',
     browse: '浏览',

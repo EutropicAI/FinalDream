@@ -38,6 +38,7 @@ const {
   height,
   steps,
   seed,
+  count,
   gpuId,
   outputFolder,
   // Model logic
@@ -422,8 +423,14 @@ const gridStyle = computed(() => {
             <NInput v-model:value="seedStr" :placeholder="t('settings.rand')" class="glass-input-sm" />
           </div>
 
+          <!-- Count -->
+          <div class="setting-item">
+            <label>{{ t('settings.count') }}</label>
+            <NInputNumber v-model:value="count" :min="1" :max="100" class="glass-input-sm" />
+          </div>
+
           <!-- GPU -->
-          <div class="setting-item full-width">
+          <div class="setting-item">
             <label>{{ t('settings.gpuId') }}</label>
             <NInput v-model:value="gpuIdStr" :placeholder="t('settings.auto')" class="glass-input-sm" />
           </div>

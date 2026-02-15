@@ -31,6 +31,7 @@ export const en = {
     height: 'Height',
     steps: 'Steps',
     seed: 'Seed',
+    count: 'Gen Count',
     gpuId: 'GPU ID',
     negativePrompt: 'Negative Prompt',
     browse: 'Browse',
