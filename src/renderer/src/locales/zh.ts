@@ -2,7 +2,7 @@ export const zh = {
   common: {
     startDreaming: '开始你的梦境',
     startDreamingDesc: '在上方输入提示词，开始生成你的第一幅杰作。',
-    generate: '生 成',
+    generate: '生成',
     logs: '日志',
     settings: '设置',
     stop: '停止',
