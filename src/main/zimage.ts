@@ -72,14 +72,13 @@ async function runSingleZImage(event: IpcMainEvent, args: string[], executablePa
     })
 
     zImageChild.on('close', (code) => {
-      event.sender.send(IpcChannelOn.COMMAND_CLOSE, code)
       console.log(`ZImage process exited with code: ${code}`)
       zImageChild = null
       resolve(code ?? 0)
     })
 
     zImageChild.on('error', (err) => {
-      event.sender.send(IpcChannelOn.COMMAND_CLOSE, err.toString())
+      event.sender.send(IpcChannelOn.COMMAND_STDERR, err.toString())
       console.error('Failed to start subprocess:', err)
       zImageChild = null
       resolve(-1)
