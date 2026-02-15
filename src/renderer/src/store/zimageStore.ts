@@ -142,6 +142,14 @@ export const useZImageStore = defineStore(
       }
     }, { immediate: true }) // immediate: true runs on first mount
 
+    const stopGeneration = (): void => {
+      if (isGenerating.value) {
+        ipcRenderer.send(IpcChannelSend.KILL_COMMAND)
+        isGenerating.value = false // Optimistically update state
+        logs.value += '\nStopping generation...'
+      }
+    }
+
     const addGeneratedImage = (image: { path: string, mtime: number }): void => {
       const exists = generatedImages.value.some(img => img.path === image.path)
       if (!exists) {
@@ -171,6 +179,7 @@ export const useZImageStore = defineStore(
       fetchModels,
       selectOutputFolder,
       startGeneration,
+      stopGeneration,
       addGeneratedImage,
       clearGeneratedImages,
     }

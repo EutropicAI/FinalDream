@@ -35,6 +35,7 @@ function createWindow(): void {
 
   // Ipc events
   ipcMain.on(IpcChannelSend.ZIMAGE_EXECUTE_COMMAND, runZImageCommand)
+  ipcMain.on(IpcChannelSend.KILL_COMMAND, killZImageProcess)
 
   ipcMain.handle(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, openDirectory)
   ipcMain.handle(IpcChannelInvoke.ZIMAGE_GET_MODELS, getZImageModels)

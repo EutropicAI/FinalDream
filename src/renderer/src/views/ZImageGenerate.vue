@@ -43,7 +43,7 @@ const {
   gpuId,
   outputFolder,
 } = storeToRefs(zImageStore)
-const { fetchModels, startGeneration, selectOutputFolder } = zImageStore
+const { fetchModels, startGeneration, stopGeneration, selectOutputFolder } = zImageStore
 
 const message = useMessage()
 const { ipcRenderer } = window.electron
@@ -101,15 +101,24 @@ watch(logs, async () => {
 })
 
 // Actions
+// Actions
 function handleGenerate(): void {
   if (!prompt.value)
     return
-  startGeneration()
+
+  if (isGenerating.value) {
+    stopGeneration()
+    return
+  }
+
+  const result = startGeneration()
+  if (!result.success && result.message) {
+    message.error(result.message)
+  }
 }
 
-// TODO: Implement actual stop logic if backed by store
 function handleStop(): void {
-  console.log('Stop requested (Not implemented in backend yet)')
+  stopGeneration()
 }
 
 async function handleContextMenu(imagePath: string): Promise<void> {
