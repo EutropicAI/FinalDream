@@ -478,15 +478,27 @@ $radius-sm: 12px;
   cursor: pointer;
   position: relative;
 
+  /* Ensure content fills the wrapper */
+  display: flex;
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     z-index: 1;
   }
 
-  :deep(img) {
+  /* Target the NImage component root */
+  .gallery-image {
     width: 100%;
     height: 100%;
+    display: flex; /* Removes inline-block spacing */
+  }
+
+  /* Target the img tag inside NImage */
+  :deep(img) {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
     transition: transform 0.5s ease;
   }
 
