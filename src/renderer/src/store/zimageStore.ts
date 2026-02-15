@@ -121,13 +121,13 @@ export const useZImageStore = defineStore(
     // Watch outputFolder changes and automatically manage file watcher
     watch(outputFolder, async (newFolder, oldFolder) => {
       console.log('[Store] Output folder changed:', { old: oldFolder, new: newFolder })
-      
+
       // Stop watching old directory if exists
       if (oldFolder) {
         console.log('[Store] Stopping watcher for old directory:', oldFolder)
         await ipcRenderer.invoke(IpcChannelInvoke.STOP_WATCHING_DIRECTORY)
       }
-      
+
       // Start watching new directory if exists
       if (newFolder) {
         console.log('[Store] Starting watcher for new directory:', newFolder)

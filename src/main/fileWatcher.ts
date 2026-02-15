@@ -34,7 +34,7 @@ export function startWatchingDirectory(
   try {
     const existingFiles = fs.readdirSync(dirPath)
     console.log(`Found ${existingFiles.length} files in directory`)
-    
+
     const imageFiles: string[] = []
     existingFiles.forEach((file) => {
       if (isImageFile(file)) {
@@ -43,7 +43,7 @@ export function startWatchingDirectory(
         imageFiles.push(fullPath)
       }
     })
-    
+
     // Send existing images to frontend
     if (imageFiles.length > 0) {
       console.log(`Sending ${imageFiles.length} existing images to frontend`)
