@@ -1,103 +1,107 @@
-// download Final2x-core from https://github.com/EutropicAI/Final2x-core/releases
-// and put it in resources folder
-
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
-const child_process = require('node:child_process')
 const fs = require('node:fs')
-
 const path = require('node:path')
+const extract = require('extract-zip')
+const { promisify } = require('node:util')
+const streamPipeline = promisify(require('node:stream').pipeline)
 
-const coreDict = {
-  'macos-arm64':
-    'https://github.com/EutropicAI/Final2x-core/releases/download/v4.0.0/Final2x-core-macos-arm64.7z',
-  'windows-x64':
-    'https://github.com/EutropicAI/Final2x-core/releases/download/v4.0.0/Final2x-core-windows-x64.7z',
+// Configuration
+const VERSION = '20260214'
+const BASE_URL = `https://github.com/nihui/zimage-ncnn-vulkan/releases/download/${VERSION}`
+
+const PLATFORMS = {
+  'win32': 'windows',
+  'darwin': 'macos',
+  'linux': 'linux'
 }
 
-console.log('-'.repeat(50))
+// Map Node.js platform to zimage platform string
+const CURRENT_PLATFORM = PLATFORMS[process.env.PLATFORM || process.platform]
 
-// 判断当前平台
-const PLATFORM = process.env.PLATFORM || process.platform
-// 判断当前平台架构
-const ARCH = process.env.ARCH || process.arch
-console.log(`Platform: ${PLATFORM}`, `| Arch: ${ARCH}`)
-if (process.env.SKIP_DOWNLOAD_CORE) {
-  console.log('Skip download Final2x-core by env SKIP_DOWNLOAD_CORE')
-  process.exit(0)
-}
-
-async function downloadAndUnzip(url, targetPath) {
-  const zipFileName = path.basename(url)
-  const zipFilePath = path.join(targetPath, zipFileName)
-
-  const res = await fetch(url)
-  const dest = fs.createWriteStream(zipFilePath)
-
-  dest.on('finish', () => {
-    console.log(`Download ${zipFileName} success!`)
-    // 解压缩文件, 命令行调用 7z
-    const Final2xCorePath = path.join(targetPath, 'Final2x-core')
-    const unzipCmd = `7z x ${zipFilePath} -o${Final2xCorePath}`
-    console.log(`Unzip command: ${unzipCmd}`)
-    // 使用异步方式执行解压命令
-    child_process.exec(unzipCmd, (error) => {
-      if (error) {
-        console.error(`Unzip error: ${error}`)
-        return
-      }
-      console.log(`Unzip ${zipFileName} success!`)
-      // 删除压缩文件
-      fs.unlinkSync(zipFilePath)
-      console.log(`Delete ${zipFileName} success!`)
-    })
-  })
-
-  res.body.pipe(dest)
-}
-
-async function downloadAndUnzipCore(platform) {
-  const url = coreDict[platform]
-  if (!url) {
-    console.error('Invalid platform')
-    return
-  }
-
-  const targetPath = path.join(__dirname)
-  console.log(`Target path: ${targetPath}`)
-
-  if (fs.existsSync(path.join(targetPath, 'Final2x-core'))) {
-    console.log('Final2x-core already exists, skip download!')
-    return
-  }
-
-  if (!fs.existsSync(targetPath)) {
-    fs.mkdirSync(targetPath, { recursive: true })
-  }
-
-  await downloadAndUnzip(url, targetPath)
-}
-
-// 选择要下载的平台
-let platformToDownload = ''
-if (PLATFORM === 'darwin') {
-  platformToDownload = ARCH === 'arm64' ? 'macos-arm64' : 'macos-x64'
-}
-else if (PLATFORM === 'linux') {
-  console.error('Skip download Final2x-core for linux! Please use pip to install Final2x-core')
-  process.exit(0)
-}
-else if (PLATFORM === 'win32') {
-  platformToDownload = 'windows-x64'
-}
-else {
-  console.error('Unsupported platform!')
+if (!CURRENT_PLATFORM) {
+  console.error(`Unsupported platform: ${process.platform}`)
   process.exit(1)
 }
 
-console.log(`Downloading Final2x-core for ${platformToDownload}...`)
-// 执行下载和解压
-downloadAndUnzipCore(platformToDownload)
-  .then()
-  .catch((err) => {
-    console.error(err)
-  })
+const FILENAME = `zimage-ncnn-vulkan-${VERSION}-${CURRENT_PLATFORM}.zip`
+const DOWNLOAD_URL = `${BASE_URL}/${FILENAME}`
+const TARGET_DIR = path.join(__dirname, 'FinalDream-core')
+const TEMP_ZIP_PATH = path.join(__dirname, FILENAME)
+const TEMP_EXTRACT_DIR = path.join(__dirname, 'temp_extract')
+
+console.log('-'.repeat(50))
+console.log(`Platform: ${process.platform}`)
+console.log(`Target Version: ${VERSION}`)
+console.log(`Download URL: ${DOWNLOAD_URL}`)
+console.log(`Target Directory: ${TARGET_DIR}`)
+console.log('-'.repeat(50))
+
+async function downloadFile(url, destPath) {
+  console.log(`Downloading ${url}...`)
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Unexpected response ${response.statusText}`)
+  }
+  await streamPipeline(response.body, fs.createWriteStream(destPath))
+  console.log('Download complete.')
+}
+
+async function main() {
+  try {
+    // 1. Clean previous installations
+    if (fs.existsSync(TARGET_DIR)) {
+      console.log(`Removing existing directory: ${TARGET_DIR}`)
+      fs.rmSync(TARGET_DIR, { recursive: true, force: true })
+    }
+    if (fs.existsSync(TEMP_EXTRACT_DIR)) {
+      fs.rmSync(TEMP_EXTRACT_DIR, { recursive: true, force: true })
+    }
+
+    // 2. Download
+    await downloadFile(DOWNLOAD_URL, TEMP_ZIP_PATH)
+
+    // 3. Extract
+    console.log(`Extracting to ${TEMP_EXTRACT_DIR}...`)
+    await extract(TEMP_ZIP_PATH, { dir: TEMP_EXTRACT_DIR })
+    console.log('Extraction complete.')
+
+    // 4. Flatten and Move
+    // The zip usually contains a single folder named like the zip file (without .zip)
+    const files = fs.readdirSync(TEMP_EXTRACT_DIR)
+    const innerFolder = files.find(f => fs.statSync(path.join(TEMP_EXTRACT_DIR, f)).isDirectory())
+    
+    if (!innerFolder) {
+      throw new Error('Could not find inner folder in extracted zip')
+    }
+
+    const sourcePath = path.join(TEMP_EXTRACT_DIR, innerFolder)
+    console.log(`Moving contents from ${sourcePath} to ${TARGET_DIR}...`)
+    
+    // Create target dir
+    fs.mkdirSync(TARGET_DIR, { recursive: true })
+
+    // Move all files from inner folder to TARGET_DIR
+    const innerFiles = fs.readdirSync(sourcePath)
+    for (const file of innerFiles) {
+      const src = path.join(sourcePath, file)
+      const dest = path.join(TARGET_DIR, file)
+      fs.renameSync(src, dest)
+    }
+
+    // 5. Cleanup
+    console.log('Cleaning up temporary files...')
+    fs.unlinkSync(TEMP_ZIP_PATH)
+    fs.rmSync(TEMP_EXTRACT_DIR, { recursive: true, force: true })
+
+    console.log('Success! FinalDream-core is ready.')
+
+  } catch (error) {
+    console.error('Error:', error)
+    // Cleanup on error
+    if (fs.existsSync(TEMP_ZIP_PATH)) fs.unlinkSync(TEMP_ZIP_PATH)
+    if (fs.existsSync(TEMP_EXTRACT_DIR)) fs.rmSync(TEMP_EXTRACT_DIR, { recursive: true, force: true })
+    process.exit(1)
+  }
+}
+
+main()
