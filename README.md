@@ -7,6 +7,10 @@
 ![MacOS](https://img.shields.io/badge/Support-MacOS-blue?logo=Apple&style=flat-square)
 ![Windows](https://img.shields.io/badge/Support-Windows-blue?logo=Windows&style=flat-square)
 ![Linux](https://img.shields.io/badge/Support-Linux-blue?logo=Linux&style=flat-square)
+[![CI-test](https://github.com/EutropicAI/FinalDream/actions/workflows/CI-test.yml/badge.svg)](https://github.com/EutropicAI/FinalDream/actions/workflows/CI-test.yml)
+[![CI-build](https://github.com/EutropicAI/FinalDream/actions/workflows/CI-build.yml/badge.svg)](https://github.com/EutropicAI/FinalDream/actions/workflows/CI-build.yml)
+[![Release](https://github.com/EutropicAI/FinalDream/actions/workflows/Release.yml/badge.svg)](https://github.com/EutropicAI/FinalDream/actions/workflows/Release.yml)
+![Download](https://img.shields.io/github/downloads/EutropicAI/FinalDream/total)
 ![License](https://img.shields.io/github/license/EutropicAI/FinalDream?style=flat-square)
 
 **One last step for your dreams.**
