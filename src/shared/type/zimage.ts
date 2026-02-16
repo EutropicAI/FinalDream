@@ -6,7 +6,7 @@ export interface ZImageOptions {
   height?: number
   steps?: number | 'auto'
   seed?: number | 'rand'
-  model?: string
+  model: string
   gpuId?: number | 'auto'
   count?: number
   modelDir: string

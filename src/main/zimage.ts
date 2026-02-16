@@ -68,7 +68,7 @@ export async function getZImageModels(_event: IpcMainInvokeEvent, customModelDir
 async function runSingleZImage(_event: IpcMainEvent, args: string[], executablePath: string): Promise<number> {
   return new Promise((resolve) => {
     zImageChild = spawn(executablePath, args, {
-      shell: false, // to allow prompt string with special characters 
+      shell: false, // to allow prompt string with special characters
     })
 
     zImageChild.stdout.on('data', (data) => {
@@ -114,14 +114,6 @@ export async function runZImageCommand(_event: IpcMainEvent, options: ZImageOpti
 
     // Construct arguments
     const args: string[] = []
-    args.push('-p', options.prompt)
-
-    if (options.negativePrompt) {
-      args.push('-n', options.negativePrompt)
-    }
-
-    // output
-    args.push('-o', outputPath)
 
     if (options.width && options.height) {
       args.push('-s', `${options.width},${options.height}`)
@@ -135,14 +127,24 @@ export async function runZImageCommand(_event: IpcMainEvent, options: ZImageOpti
       args.push('-r', `${options.seed}`)
     }
 
-    if (options.model) {
-      const modelPath = join(options.modelDir, options.model)
-      args.push('-m', normalize(modelPath))
-    }
-
     if (options.gpuId && options.gpuId !== 'auto') {
       args.push('-g', `${options.gpuId}`)
     }
+
+    // model path
+    const modelPath = join(options.modelDir, options.model)
+    args.push('-m', normalize(modelPath))
+
+    // output
+    args.push('-o', outputPath)
+
+    // negative prompt
+    if (options.negativePrompt) {
+      args.push('-n', options.negativePrompt)
+    }
+
+    // prompt
+    args.push('-p', options.prompt)
 
     const current_start_args = `[Batch ${i + 1}/${count}] Executing ZImage: ${getCorePath()} ${args.join(' ')} \n\n`
     console.log(current_start_args)
