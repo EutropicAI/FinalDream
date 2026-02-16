@@ -20,7 +20,8 @@ FinalDream is a cross-platform AI image generation tool that allows you to gener
 ### Screenshots
 
 <div align="center">
-<!-- Insert screenshots here -->
+<img width="1182" height="892" alt="image" src="https://github.com/user-attachments/assets/a134ea45-059f-4b65-a88b-96f467f8ad22" />
+<img width="1182" height="892" alt="image" src="https://github.com/user-attachments/assets/c8d74360-f032-4403-85ee-9e2be95295a6" />
 </div>
 
 ### Installation
