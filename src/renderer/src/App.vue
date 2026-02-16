@@ -210,4 +210,88 @@ body {
 .n-modal, .n-drawer {
   border-radius: var(--ios-radius-lg) !important;
 }
+
+/* Standard Glass Components */
+.glass-panel {
+  background: var(--ios-bg-glass);
+  backdrop-filter: blur(var(--ios-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--ios-blur)) saturate(180%);
+  border: var(--ios-border);
+  box-shadow: var(--ios-shadow);
+}
+
+.glass-button {
+  color: #1d1d1f;
+  background: var(--ios-bg-glass);
+  backdrop-filter: blur(20px);
+  border: var(--ios-border);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  &:hover {
+    background: var(--ios-bg-glass-strong);
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
+  &:active { transform: scale(0.95); }
+}
+
+.glass-button-primary {
+  font-weight: 600;
+  background-image: linear-gradient(135deg, rgba(0, 122, 255, 0.8) 0%, rgba(90, 200, 250, 0.8) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 20px -6px rgba(0, 122, 255, 0.5);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: white;
+
+  &:hover {
+    box-shadow: 0 12px 28px -8px rgba(0, 122, 255, 0.8);
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.1);
+  }
+  &:active {
+    transform: translateY(1px) scale(0.98);
+  }
+}
+
+
+.glass-list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: var(--ios-radius);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Dark Glass Drawer */
+.glass-drawer-dark {
+  background: transparent !important;
+
+  /* Target both descendant (if on container) and self (if on drawer) */
+  .n-drawer, &.n-drawer {
+    background-color: var(--ios-bg-glass-dark) !important;
+    backdrop-filter: blur(var(--ios-blur));
+    -webkit-backdrop-filter: blur(var(--ios-blur));
+    border-top: var(--ios-border);
+    color: white !important;
+  }
+
+  /* Ensure content wrapper is transparent */
+  .n-drawer-content {
+    background-color: transparent !important;
+  }
+
+  .n-drawer-body-content-wrapper {
+    background-color: transparent !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+  }
+}
+
 </style>

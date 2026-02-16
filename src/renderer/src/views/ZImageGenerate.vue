@@ -296,7 +296,7 @@ const gridStyle = computed(() => {
               type="primary"
               round
               size="large"
-              class="generate-button"
+              class="glass-button-primary"
               :disabled="!prompt"
               @click="handleGenerate"
             >
@@ -312,7 +312,7 @@ const gridStyle = computed(() => {
             type="warning"
             round
             size="large"
-            class="generate-button"
+            class="glass-button-primary"
             @click="handleStop"
           >
             <template #icon>
@@ -364,7 +364,7 @@ const gridStyle = computed(() => {
     </main>
 
     <!-- Logs Drawer -->
-    <NDrawer v-model:show="showLogDrawer" :height="400" placement="bottom" class="glass-drawer">
+    <NDrawer v-model:show="showLogDrawer" :height="400" placement="bottom" class="glass-drawer-dark">
       <div class="log-container">
         <NLog ref="logRef" :log="logs" :rows="20" language="log" />
       </div>
@@ -372,7 +372,7 @@ const gridStyle = computed(() => {
 
     <!-- Settings Modal -->
     <NModal v-model:show="showSettings">
-      <div class="settings-card glass-modal">
+      <div class="settings-card glass-modal glass-panel">
         <div class="settings-grid">
           <!-- Model Folder -->
           <div class="setting-item full-width">
@@ -421,7 +421,7 @@ const gridStyle = computed(() => {
           <div class="setting-item full-width">
             <label>{{ t('common.modelZoo') }}</label>
             <div class="model-zoo-list">
-              <div v-for="model in remoteModels" :key="model.id" class="zoo-item">
+              <div v-for="model in remoteModels" :key="model.id" class="zoo-item glass-list-item">
                 <div class="zoo-info">
                   <div class="zoo-name">
                     {{ model.name }}
@@ -503,7 +503,7 @@ const gridStyle = computed(() => {
       transform-origin="center"
     >
       <NCard
-        class="glass-modal"
+        class="glass-panel"
         style="width: 400px;"
         :title="t('common.downloading')"
         :bordered="false"
@@ -598,42 +598,9 @@ const gridStyle = computed(() => {
   gap: 12px;
 }
 
-.glass-button {
-  color: #1d1d1f;
-  background: var(--ios-bg-glass);
-  backdrop-filter: blur(20px);
-  border: var(--ios-border);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
-  &:hover {
-    background: var(--ios-bg-glass-strong);
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  }
-  &:active { transform: scale(0.95); }
-}
 
-.generate-button {
-  min-width: 120px;
-  font-weight: 600;
-  font-size: 16px;
-  background-image: linear-gradient(135deg, rgba(0, 122, 255, 0.8) 0%, rgba(90, 200, 250, 0.8) 100%);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 20px -6px rgba(0, 122, 255, 0.5);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy spring */
-  color: white;
 
-  &:hover {
-    box-shadow: 0 12px 28px -8px rgba(0, 122, 255, 0.8);
-    transform: translateY(-2px) scale(1.02);
-    filter: brightness(1.1);
-  }
-
-  &:active {
-    transform: translateY(1px) scale(0.98);
-  }
-}
 
 /* Gallery */
 .gallery-content {
@@ -731,14 +698,10 @@ const gridStyle = computed(() => {
 
 /* Settings Modal */
 .glass-modal {
-  /* Liquid Modal */
-  background: var(--ios-bg-glass) !important;
-  backdrop-filter: blur(var(--ios-blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--ios-blur)) saturate(180%);
+  /* Liquid Modal Layout */
+  /* Visuals handled by .glass-panel */
   padding: 32px;
   border-radius: var(--ios-radius-lg);
-  border: var(--ios-border);
-  box-shadow: 0 32px 64px rgba(0,0,0,0.15);
   width: 500px;
   max-width: 90vw;
   
@@ -794,26 +757,7 @@ const gridStyle = computed(() => {
 }
 
 
-.glass-drawer {
-  background: transparent !important; /* Naive UI wrapper transparency */
 
-  :deep(.n-drawer) {
-    background-color: var(--ios-bg-glass-dark) !important;
-    backdrop-filter: blur(var(--ios-blur));
-    -webkit-backdrop-filter: blur(var(--ios-blur));
-    border-top: var(--ios-border);
-  }
-
-  :deep(.n-drawer-content) {
-    background-color: transparent !important;
-  }
-
-  :deep(.n-drawer-body-content-wrapper) {
-    background-color: transparent !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-  }
-}
 
 .log-container {
   padding: 20px;
@@ -838,19 +782,8 @@ const gridStyle = computed(() => {
 }
 
 .zoo-item {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-radius: var(--ios-radius);
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   margin-bottom: 8px;
-  transition: all 0.2s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.4);
-  }
 
   .zoo-info {
     .zoo-name {
