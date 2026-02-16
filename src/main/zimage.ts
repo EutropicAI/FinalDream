@@ -68,7 +68,7 @@ export async function getZImageModels(_event: IpcMainInvokeEvent, customModelDir
 async function runSingleZImage(_event: IpcMainEvent, args: string[], executablePath: string): Promise<number> {
   return new Promise((resolve) => {
     zImageChild = spawn(executablePath, args, {
-      shell: true,
+      shell: false, // to allow prompt string with special characters 
     })
 
     zImageChild.stdout.on('data', (data) => {
