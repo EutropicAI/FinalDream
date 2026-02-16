@@ -55,17 +55,10 @@ export function startWatchingDirectory(
     // Add to detected set
     fileStats.forEach(item => detectedFiles.add(item.path))
 
-    // Send existing images to frontend
-    if (fileStats.length > 0) {
-      console.log(`Sending ${fileStats.length} existing images to frontend`)
-      fileStats.forEach((item) => {
-        if (!_event.sender.isDestroyed()) {
-          _event.sender.send(IpcChannelOn.NEW_IMAGE_DETECTED, {
-            path: item.path,
-            mtime: item.mtime,
-          })
-        }
-      })
+    // Send existing images to frontend in a single batch
+    if (fileStats.length > 0 && !_event.sender.isDestroyed()) {
+      console.log(`Sending ${fileStats.length} existing images to frontend (batch)`)
+      _event.sender.send(IpcChannelOn.BATCH_IMAGES_DETECTED, fileStats)
     }
   }
   catch (error) {

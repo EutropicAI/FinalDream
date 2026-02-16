@@ -29,7 +29,7 @@ export const useZImageStore = defineStore(
     // Model Status
     const modelStatus = ref<Record<string, { valid: boolean, missingFiles: string[] }>>({})
     const isDownloadingModel = ref<Record<string, boolean>>({}) // Track downloading state per model
-    const downloadProgress = ref<ZImageModelDownloadProgress>({ file: '', progress: 0, currentFileIndex: 0, totalFiles: 0 })
+    const downloadProgress = ref<ZImageModelDownloadProgress>({ file: '', progress: 0, currentFileIndex: 0, totalFiles: 0, downloadedBytes: 0, totalBytes: 0 })
 
     // Model Zoo (Remote/Preset Models)
     const remoteModels = ref([
@@ -192,17 +192,42 @@ export const useZImageStore = defineStore(
       return { success: true }
     }
 
-    // Listen for new images from file watcher
+    // Binary search insert into descending-sorted array (by mtime)
+    function insertImageSorted(image: { path: string, mtime: number }): void {
+      const arr = generatedImages.value
+      let lo = 0
+      let hi = arr.length
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1
+        if (arr[mid].mtime > image.mtime) {
+          lo = mid + 1
+        }
+        else {
+          hi = mid
+        }
+      }
+      arr.splice(lo, 0, image)
+    }
+
+    // Listen for batch images (initial load)
+    ipcRenderer.on(IpcChannelOn.BATCH_IMAGES_DETECTED, (_event: any, images: Array<{ path: string, mtime: number }>) => {
+      console.log('[Store] Batch images received:', images.length)
+      const existingPaths = new Set(generatedImages.value.map(img => img.path))
+      const newImages = images.filter(img => !existingPaths.has(img.path))
+      if (newImages.length > 0) {
+        generatedImages.value.push(...newImages)
+        generatedImages.value.sort((a, b) => b.mtime - a.mtime)
+        console.log('[Store] Batch loaded. Total count:', generatedImages.value.length)
+      }
+    })
+
+    // Listen for single new image from file watcher
     ipcRenderer.on(IpcChannelOn.NEW_IMAGE_DETECTED, (_event: any, image: { path: string, mtime: number }) => {
       console.log('[Store] New image detected:', image.path)
-
-      // Check if already exists by path
       const exists = generatedImages.value.some(img => img.path === image.path)
       if (!exists) {
-        generatedImages.value.push(image)
-        // Sort by mtime descending (Newest first)
-        generatedImages.value.sort((a, b) => b.mtime - a.mtime)
-        console.log('[Store] Image added and sorted. Count:', generatedImages.value.length)
+        insertImageSorted(image)
+        console.log('[Store] Image inserted. Count:', generatedImages.value.length)
       }
     })
 
@@ -273,8 +298,7 @@ export const useZImageStore = defineStore(
     const addGeneratedImage = (image: { path: string, mtime: number }): void => {
       const exists = generatedImages.value.some(img => img.path === image.path)
       if (!exists) {
-        generatedImages.value.push(image)
-        generatedImages.value.sort((a, b) => b.mtime - a.mtime)
+        insertImageSorted(image)
       }
     }
 

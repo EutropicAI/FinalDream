@@ -31,6 +31,7 @@ export enum IpcChannelOn {
   COMMAND_STDERR = 'ipc:on:command-stderr',
   COMMAND_CLOSE = 'ipc:on:command-close-code',
   NEW_IMAGE_DETECTED = 'ipc:on:new-image-detected',
+  BATCH_IMAGES_DETECTED = 'ipc:on:batch-images-detected',
   IMAGE_REMOVED = 'ipc:on:image-removed',
   MODEL_DOWNLOAD_PROGRESS = 'ipc:on:model-download-progress',
 }
