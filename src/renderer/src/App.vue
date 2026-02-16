@@ -131,6 +131,7 @@ provide('showLogsDrawer', showLogsDrawer)
   animation: gradient-animation 15s ease infinite;
 }
 
+
 @keyframes gradient-animation {
   0% {
     background-position: 0% 50%;
@@ -141,5 +142,72 @@ provide('showLogsDrawer', showLogsDrawer)
   100% {
     background-position: 0% 50%;
   }
+}
+</style>
+
+<style lang="scss">
+/* Global iOS Theme Variables & Utils (Merged from ios-theme.scss) */
+:root {
+  --ios-radius: 20px;
+  --ios-radius-lg: 24px;
+  /* Strong blur for liquid effect */
+  --ios-blur: 40px; 
+  /* Much clearer glass (lower opacity) */
+  --ios-bg-glass: rgba(255, 255, 255, 0.25);
+  --ios-bg-glass-strong: rgba(255, 255, 255, 0.45);
+  --ios-bg-glass-dark: rgba(30, 30, 30, 0.5);
+  /* Softer shadow */
+  --ios-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  /* Slightly more visible border for definition */
+  --ios-border: 1px solid rgba(255, 255, 255, 0.3);
+  
+  --ios-font-family:
+    "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+body {
+  font-family: var(--ios-font-family);
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+/* Glassmorphism Utilities */
+.ios-glass {
+  background: var(--ios-bg-glass);
+  backdrop-filter: blur(var(--ios-blur));
+  -webkit-backdrop-filter: blur(var(--ios-blur));
+  border: var(--ios-border);
+  box-shadow: var(--ios-shadow);
+}
+
+.ios-glass-dark {
+  background: var(--ios-bg-glass-dark);
+  backdrop-filter: blur(var(--ios-blur));
+  -webkit-backdrop-filter: blur(var(--ios-blur));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.ios-card {
+  border-radius: var(--ios-radius-lg);
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
+  }
+}
+
+/* Global Component Overrides (that NConfigProvider can't reach easily) */
+.n-card {
+  border-radius: var(--ios-radius-lg) !important;
+  box-shadow: var(--ios-shadow);
+}
+
+.n-modal, .n-drawer {
+  border-radius: var(--ios-radius-lg) !important;
 }
 </style>
