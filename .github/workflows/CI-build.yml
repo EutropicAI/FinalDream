@@ -156,11 +156,7 @@ jobs:
           pnpm install
           pnpm run build:linux-${{ matrix.os-version }}
         env:
-          SKIP_DOWNLOAD_CORE: true
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: ls dist
-        run: ls -R ./dist
 
       - name: zip-unpacked
         run: |

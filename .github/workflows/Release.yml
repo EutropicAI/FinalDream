@@ -34,6 +34,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+      - name: rename
+        run: |
+          cd .\dist
+          mv *.exe FinalDream-windows-${{ matrix.os-version }}.exe
+
       - name: zip-unpacked-x64
         if: matrix.os-version == 'x64'
         run: |
@@ -69,7 +74,7 @@ jobs:
   macos:
     strategy:
       matrix:
-        os-version: ['arm64']
+        os-version: ['x64', 'arm64']
 
     runs-on: macos-14
     steps:
@@ -91,13 +96,18 @@ jobs:
           pnpm fetchcore
           pnpm run build:mac-${{ matrix.os-version }}
         env:
-          ARCH: ${{ matrix.os-version }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: rename
         run: |
           cd ./dist
           mv *.dmg FinalDream-macos-${{ matrix.os-version }}-dmg.dmg
+
+      - name: zip-unpacked-x64
+        if: matrix.os-version == 'x64'
+        run: |
+          cd ./dist/mac
+          7z a -r FinalDream-macos-${{ matrix.os-version }}-unpacked.7z *
 
       - name: zip-unpacked-arm64
         if: matrix.os-version == 'arm64'
@@ -111,6 +121,13 @@ jobs:
           name: FinalDream-macos-${{ matrix.os-version }}-dmg
           path: dist/*.dmg
 
+      - name: upload-unpacked-x64
+        if: matrix.os-version == 'x64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: FinalDream-macos-${{ matrix.os-version }}-unpacked
+          path: dist/mac/*.7z
+
       - name: upload-unpacked-arm64
         if: matrix.os-version == 'arm64'
         uses: actions/upload-artifact@v4
@@ -118,7 +135,7 @@ jobs:
           name: FinalDream-macos-${{ matrix.os-version }}-unpacked
           path: dist/mac-arm64/*.7z
 
-  linux-pip:
+  linux:
     strategy:
       matrix:
         os-version: ['x64']
@@ -142,7 +159,6 @@ jobs:
           pnpm install
           pnpm run build:linux-${{ matrix.os-version }}
         env:
-          SKIP_DOWNLOAD_CORE: true
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: zip-unpacked
@@ -182,7 +198,7 @@ jobs:
           path: dist/linux-unpacked/*.7z
 
   github:
-    needs: [windows, macos, linux-pip]
+    needs: [windows, macos, linux]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
