@@ -511,8 +511,8 @@ const gridStyle = computed(() => {
       transform-origin="center"
     >
       <NCard
-        class="glass-panel"
-        style="width: 400px; --n-text-color: #000; --n-title-text-color: #000; color: #000;"
+        class="ios-glass-dark"
+        style="width: 400px; --n-color: transparent;"
         :title="t('common.downloading')"
         :bordered="false"
         size="huge"
