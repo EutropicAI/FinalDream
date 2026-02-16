@@ -434,7 +434,6 @@ const gridStyle = computed(() => {
                   <NButton
                     size="small"
                     :type="availableModels.includes(model.id) ? 'success' : 'primary'"
-                    secondary
                     round
                     :loading="!!isDownloadingModel[model.id] && !!modelStatus[model.id] && modelStatus[model.id]?.missingFiles.length > 0"
                     @click="() => {
@@ -799,7 +798,7 @@ const gridStyle = computed(() => {
   background: transparent !important; /* Naive UI wrapper transparency */
 
   :deep(.n-drawer) {
-    background-color: var(--ios-bg-glass) !important;
+    background-color: var(--ios-bg-glass-dark) !important;
     backdrop-filter: blur(var(--ios-blur));
     -webkit-backdrop-filter: blur(var(--ios-blur));
     border-top: var(--ios-border);
