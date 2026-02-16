@@ -512,7 +512,7 @@ const gridStyle = computed(() => {
     >
       <NCard
         class="glass-panel"
-        style="width: 400px;"
+        style="width: 400px; --n-text-color: #000; --n-title-text-color: #000; color: #000;"
         :title="t('common.downloading')"
         :bordered="false"
         size="huge"
@@ -805,13 +805,13 @@ const gridStyle = computed(() => {
     align-items: center;
     margin-bottom: 8px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.9);
+    color: #333;
   }
 
   .download-size {
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    color: white;
+    color: #000;
   }
 }
 </style>
