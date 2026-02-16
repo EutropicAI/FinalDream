@@ -49,8 +49,8 @@ const themeOverrides = {
   Select: {
     peers: {
       InternalSelectMenu: {
-        color: 'rgba(20, 20, 20, 0.9)', // Darker menu for contrast
-        optionTextColor: 'white',
+        color: 'rgba(255, 255, 255, 0.95)', // Darker menu for contrast
+        optionTextColor: 'black',
         optionTextColorActive: '#007AFF',
         borderRadius: '16px',
         padding: '8px',
