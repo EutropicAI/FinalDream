@@ -577,24 +577,18 @@ const gridStyle = computed(() => {
   max-width: 800px;
 
   :deep(.n-input) {
-    /* Liquid Input */
-    background-color: rgba(255, 255, 255, 0.2) !important;
+    /* Liquid Input - Specific overrides */
+    /* background/border colors handled by global theme */
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
     box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border-radius: 50px !important;
-    color: #000;
+    border-radius: 50px !important; /* Override global 20px */
 
     &:hover, &:focus-within {
-      background-color: rgba(255, 255, 255, 0.45) !important;
+      /* Theme handles color change */
+      /* Add extra shadow and lift effect */
       box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 20px rgba(0,0,0,0.05);
-      border-color: rgba(255, 255, 255, 0.6) !important;
       transform: translateY(-1px);
-    }
-
-    .n-input__placeholder {
-      color: rgba(0, 0, 0, 0.5);
     }
   }
 }
@@ -723,20 +717,23 @@ const gridStyle = computed(() => {
       margin: 0 0 8px;
       font-size: 24px;
       font-weight: 700;
-      color: #1d1d1f;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
     p {
       margin: 0;
-      color: #333;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
     }
   }
 }
 
+
 /* Settings Modal */
 .glass-modal {
   /* Liquid Modal */
-  background: var(--ios-bg-glass);
+  background: var(--ios-bg-glass) !important;
   backdrop-filter: blur(var(--ios-blur)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--ios-blur)) saturate(180%);
   padding: 32px;
@@ -745,6 +742,11 @@ const gridStyle = computed(() => {
   box-shadow: 0 32px 64px rgba(0,0,0,0.15);
   width: 500px;
   max-width: 90vw;
+  
+  /* Ensure no default background from parents leaks in if they are somehow white */
+  :deep(.n-card), :deep(.n-modal-body-wrapper) {
+      background: transparent !important;
+  }
 }
 
 .settings-grid {
@@ -762,11 +764,11 @@ const gridStyle = computed(() => {
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: #444;
+    color: white;
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   }
 }
 
@@ -777,14 +779,8 @@ const gridStyle = computed(() => {
 
 .glass-input-sm, .glass-select {
   :deep(.n-input), :deep(.n-base-selection) {
-    background-color: rgba(255, 255, 255, 0.3) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    border-radius: 20px !important;
+    /* Colors and border-radius handled by global theme */
     backdrop-filter: blur(10px);
-
-    &:hover, &:focus-within {
-      background-color: rgba(255, 255, 255, 0.5) !important;
-    }
   }
 }
 
@@ -798,13 +794,23 @@ const gridStyle = computed(() => {
   }
 }
 
+
 .glass-drawer {
-  background: var(--ios-bg-glass); /* Transparent drawer */
-  backdrop-filter: blur(var(--ios-blur));
-  -webkit-backdrop-filter: blur(var(--ios-blur));
-  border-top: var(--ios-border);
+  background: transparent !important; /* Naive UI wrapper transparency */
+
+  :deep(.n-drawer) {
+    background-color: var(--ios-bg-glass) !important;
+    backdrop-filter: blur(var(--ios-blur));
+    -webkit-backdrop-filter: blur(var(--ios-blur));
+    border-top: var(--ios-border);
+  }
+
+  :deep(.n-drawer-content) {
+    background-color: transparent !important;
+  }
 
   :deep(.n-drawer-body-content-wrapper) {
+    background-color: transparent !important;
     overflow: hidden !important;
     padding: 0 !important;
   }
@@ -818,15 +824,17 @@ const gridStyle = computed(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: transparent;
 
   :deep(.n-log) {
     flex: 1;
     overflow: hidden;
+    background: transparent !important;
   }
 
   :deep(.n-log-loader) {
     border-radius: 3px;
-    background: transparent !important; /* Make log background transparent */
+    background: transparent !important;
   }
 }
 
@@ -848,11 +856,12 @@ const gridStyle = computed(() => {
   .zoo-info {
     .zoo-name {
       font-weight: 600;
-      color: #1d1d1f;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
     .zoo-desc {
       font-size: 12px;
-      color: #555;
+      color: rgba(255, 255, 255, 0.8);
     }
   }
 }
@@ -865,13 +874,13 @@ const gridStyle = computed(() => {
     align-items: center;
     margin-bottom: 8px;
     font-size: 13px;
-    color: #666;
+    color: rgba(255, 255, 255, 0.9);
   }
 
   .download-size {
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    color: #333;
+    color: white;
   }
 }
 </style>

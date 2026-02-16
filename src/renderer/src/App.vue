@@ -11,13 +11,60 @@ hljs.registerLanguage('log', log)
 const themeOverrides = {
   common: {
     primaryColor: '#007AFF', // iOS Blue
-    primaryColorHover: '#007AFF', // iOS Blue
+    primaryColorHover: '#007AFF',
     primaryColorPressed: '#005BBB',
+    borderRadius: '20px',
+    textColorBase: '#ffffff', // Global white text baseline
+  },
+  Input: {
+    color: 'rgba(255, 255, 255, 0.2)',
+    colorHover: 'rgba(255, 255, 255, 0.35)',
+    colorFocus: 'rgba(255, 255, 255, 0.35)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColorHover: 'rgba(255, 255, 255, 0.6)',
+    borderColorFocus: 'rgba(255, 255, 255, 0.6)',
+    textColor: 'white',
+    placeholderColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: '20px',
+    caretColor: 'white',
+    boxShadowFocus: '0 0 0 4px rgba(255, 255, 255, 0.2)',
+    // Icon colors
+    iconColor: 'white',
+    suffixTextColor: 'white',
+  },
+  InputNumber: {
+    peers: {
+      Input: {
+        color: 'rgba(255, 255, 255, 0.2)',
+        colorHover: 'rgba(255, 255, 255, 0.35)',
+        colorFocus: 'rgba(255, 255, 255, 0.35)',
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+        borderColorHover: 'rgba(255, 255, 255, 0.6)',
+        borderColorFocus: 'rgba(255, 255, 255, 0.6)',
+        textColor: 'white',
+        borderRadius: '20px',
+      }
+    }
   },
   Select: {
     peers: {
       InternalSelectMenu: {
-        height: '200px',
+        color: 'rgba(20, 20, 20, 0.9)', // Darker menu for contrast
+        optionTextColor: 'white',
+        optionTextColorActive: '#007AFF',
+        borderRadius: '16px',
+        padding: '8px',
+      },
+      InternalSelection: {
+        color: 'rgba(255, 255, 255, 0.2)',
+        colorHover: 'rgba(255, 255, 255, 0.35)',
+        colorActive: 'rgba(255, 255, 255, 0.35)',
+        textColor: 'white',
+        placeholderColor: 'rgba(255, 255, 255, 0.7)',
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+        borderColorHover: 'rgba(255, 255, 255, 0.6)',
+        borderColorActive: 'rgba(255, 255, 255, 0.6)',
+        borderRadius: '20px',
       },
     },
   },
