@@ -817,14 +817,3 @@ const gridStyle = computed(() => {
 }
 </style>
 
-<style>
-/* Global overrides for NImage to hide toolbar and fix styling */
-.n-image-preview-toolbar {
-  display: none !important;
-}
-
-.n-image img {
-  width: 100%;
-  height: 100%;
-}
-</style>

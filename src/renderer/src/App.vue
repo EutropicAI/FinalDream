@@ -98,7 +98,8 @@ provide('showLogsDrawer', showLogsDrawer)
   </NConfigProvider>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
+/* App Transition & Layout */
 .custom-fade-enter-active {
   transition: all 0.2s ease-out;
 }
@@ -131,7 +132,6 @@ provide('showLogsDrawer', showLogsDrawer)
   animation: gradient-animation 15s ease infinite;
 }
 
-
 @keyframes gradient-animation {
   0% {
     background-position: 0% 50%;
@@ -143,13 +143,13 @@ provide('showLogsDrawer', showLogsDrawer)
     background-position: 0% 50%;
   }
 }
-</style>
 
-<style lang="scss">
 /* Global iOS Theme Variables & Utils (Merged from ios-theme.scss) */
 :root {
   --ios-radius: 20px;
   --ios-radius-lg: 24px;
+/* ... rest of existing global styles ... */
+
   /* Strong blur for liquid effect */
   --ios-blur: 40px; 
   /* Much clearer glass (lower opacity) */
@@ -294,4 +294,13 @@ body {
   }
 }
 
+/* Global overrides for NImage to hide toolbar and fix styling */
+.n-image-preview-toolbar {
+  display: none !important;
+}
+
+.n-image img {
+  width: 100%;
+  height: 100%;
+}
 </style>
