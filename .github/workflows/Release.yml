@@ -1,17 +1,10 @@
-name: CI-build
+name: Release
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - LICENSE
-  pull_request:
-    paths-ignore:
-      - '**.md'
-      - LICENSE
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   windows:
@@ -76,7 +69,7 @@ jobs:
   macos:
     strategy:
       matrix:
-        os-version: ['x64', 'arm64']
+        os-version: ['arm64']
 
     runs-on: macos-14
     steps:
@@ -98,13 +91,13 @@ jobs:
           pnpm fetchcore
           pnpm run build:mac-${{ matrix.os-version }}
         env:
+          ARCH: ${{ matrix.os-version }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: zip-unpacked-x64
-        if: matrix.os-version == 'x64'
+      - name: rename
         run: |
-          cd ./dist/mac
-          7z a -r FinalDream-macos-${{ matrix.os-version }}-unpacked.7z *
+          cd ./dist
+          mv *.dmg FinalDream-macos-${{ matrix.os-version }}-dmg.dmg
 
       - name: zip-unpacked-arm64
         if: matrix.os-version == 'arm64'
@@ -118,13 +111,6 @@ jobs:
           name: FinalDream-macos-${{ matrix.os-version }}-dmg
           path: dist/*.dmg
 
-      - name: upload-unpacked-x64
-        if: matrix.os-version == 'x64'
-        uses: actions/upload-artifact@v4
-        with:
-          name: FinalDream-macos-${{ matrix.os-version }}-unpacked
-          path: dist/mac/*.7z
-
       - name: upload-unpacked-arm64
         if: matrix.os-version == 'arm64'
         uses: actions/upload-artifact@v4
@@ -132,7 +118,7 @@ jobs:
           name: FinalDream-macos-${{ matrix.os-version }}-unpacked
           path: dist/mac-arm64/*.7z
 
-  linux:
+  linux-pip:
     strategy:
       matrix:
         os-version: ['x64']
@@ -159,13 +145,17 @@ jobs:
           SKIP_DOWNLOAD_CORE: true
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: ls dist
-        run: ls -R ./dist
-
       - name: zip-unpacked
         run: |
           cd ./dist/linux-unpacked
           7z a -r FinalDream-linux-pip-${{ matrix.os-version }}-unpacked.7z *
+
+      - name: rename
+        run: |
+          cd ./dist
+          mv *.snap FinalDream-linux-pip-${{ matrix.os-version }}-snap.snap
+          mv *.AppImage FinalDream-linux-pip-${{ matrix.os-version }}-AppImage.AppImage
+          mv *.deb FinalDream-linux-pip-${{ matrix.os-version }}-deb.deb
 
       - name: upload-snap
         uses: actions/upload-artifact@v4
@@ -190,3 +180,23 @@ jobs:
         with:
           name: FinalDream-linux-pip-${{ matrix.os-version }}-unpacked
           path: dist/linux-unpacked/*.7z
+
+  github:
+    needs: [windows, macos, linux-pip]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: asset
+
+      - name: Flatten asset directory
+        run: |
+          tree asset
+          mkdir dist
+          find asset -type f -print0 | xargs -0 -I{} cp "{}" dist/
+          cd dist && ls -l
+
+      - name: Create Release and Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
