@@ -131,16 +131,15 @@ export const useZImageStore = defineStore(
         }
       }
 
-      isGenerating.value = true
-      logs.value = ''
-      // Don't clear generatedImages - keep history
-
       if (!selectedModel.value) {
         return {
           success: false,
           message: i18n.global.t('common.selectModelFirst'),
         }
       }
+
+      isGenerating.value = true
+      logs.value = ''
 
       const options: ZImageOptions = {
         prompt: prompt.value,
@@ -155,6 +154,9 @@ export const useZImageStore = defineStore(
         count: count.value,
         modelDir: modelFolder.value,
       }
+
+      console.log('[Store] Starting generation with options:', JSON.stringify(options, null, 2))
+      logs.value += `${JSON.stringify(options, null, 2)}\n`
 
       // Listeners
       const onStdout = (_event: any, data: string): void => {

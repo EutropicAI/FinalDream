@@ -7,6 +7,7 @@ import { readdir } from 'node:fs/promises'
 import { join, normalize } from 'node:path'
 
 import { IpcChannelOn } from '@shared/const/ipc'
+import kill from 'tree-kill'
 
 import { getCorePath } from './getPath'
 import { PRESET_MODELS } from './modelManager'
@@ -143,7 +144,9 @@ export async function runZImageCommand(_event: IpcMainEvent, options: ZImageOpti
       args.push('-g', `${options.gpuId}`)
     }
 
-    console.log(`[Batch ${i + 1}/${count}] Executing ZImage:`, getCorePath(), args)
+    const current_start_args = `[Batch ${i + 1}/${count}] Executing ZImage: ${getCorePath()} ${args.join(' ')}`
+    console.log(current_start_args)
+    _event.sender.send(IpcChannelOn.COMMAND_STDOUT, current_start_args)
 
     // Run and wait
     await runSingleZImage(_event, args, getCorePath())
@@ -159,9 +162,28 @@ export async function runZImageCommand(_event: IpcMainEvent, options: ZImageOpti
 
 export async function killZImageProcess(_event?: IpcMainEvent): Promise<void> {
   isBatchStopped = true
-  if (zImageChild) {
-    console.log('Killing ZImage process...')
-    zImageChild.kill()
-    zImageChild = null
+  if (!zImageChild || !zImageChild.pid) {
+    console.log('ZImage process not running or no PID found.')
+    return
   }
+
+  const pid = zImageChild.pid
+  console.log(`Killing ZImage process tree with PID: ${pid}`)
+
+  return new Promise<void>((resolve) => {
+    kill(pid, 'SIGKILL', (err) => {
+      if (err) {
+        console.error(`Failed to kill process tree: ${err.message}`)
+      }
+      else {
+        console.log('ZImage process tree killed successfully')
+      }
+
+      // Ensure reference is cleared if it matches
+      if (zImageChild && zImageChild.pid === pid) {
+        zImageChild = null
+      }
+      resolve()
+    })
+  })
 }
