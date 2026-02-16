@@ -1,7 +1,7 @@
 import type { ZImageModelDownloadProgress, ZImageOptions } from '@shared/type/zimage'
 import { IpcChannelInvoke, IpcChannelOn, IpcChannelSend } from '@shared/const/ipc'
 import { defineStore } from 'pinia'
-import { nextTick, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import i18n from '../plugins/i18n'
 
 const { ipcRenderer } = window.electron
