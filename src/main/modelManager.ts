@@ -193,6 +193,8 @@ export async function downloadModels(
         progress: 0,
         currentFileIndex: index + 1,
         totalFiles: filesToDownload.length,
+        downloadedBytes: 0,
+        totalBytes: 0,
       }
       _event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
 
@@ -204,6 +206,8 @@ export async function downloadModels(
           progress: percentage,
           currentFileIndex: index + 1,
           totalFiles: filesToDownload.length,
+          downloadedBytes: downloaded,
+          totalBytes: total,
         }
         _event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
       })

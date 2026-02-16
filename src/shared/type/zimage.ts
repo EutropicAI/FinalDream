@@ -17,4 +17,6 @@ export interface ZImageModelDownloadProgress {
   progress: number
   currentFileIndex: number
   totalFiles: number
+  downloadedBytes: number
+  totalBytes: number
 }

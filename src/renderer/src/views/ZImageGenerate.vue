@@ -99,15 +99,21 @@ onUnmounted(() => {
   ipcRenderer.removeAllListeners(IpcChannelOn.IMAGE_REMOVED)
 })
 
-// Log Scrolling
-watch(logs, async () => {
-  await nextTick()
-  if (logRef.value?.$el) {
-    const scrollContainer = logRef.value.$el.querySelector('.n-log-loader')
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight
+// Log Scrolling (throttled to avoid excessive DOM operations during generation)
+let logScrollTimer: ReturnType<typeof setTimeout> | null = null
+watch(logs, () => {
+  if (logScrollTimer)
+    return
+  logScrollTimer = setTimeout(async () => {
+    logScrollTimer = null
+    await nextTick()
+    if (logRef.value?.$el) {
+      const scrollContainer = logRef.value.$el.querySelector('.n-log-loader')
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight
+      }
     }
-  }
+  }, 150)
 })
 
 // Actions
@@ -218,6 +224,17 @@ const gpuIdStr = computed({
   },
 })
 
+// Format bytes to human-readable string
+function formatBytes(bytes: number): string {
+  if (bytes === 0)
+    return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB']
+  const k = 1024
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const value = bytes / k ** i
+  return `${value.toFixed(i >= 2 ? 2 : 0)} ${units[i]}`
+}
+
 // Logic: Stepped Hard-Coded Grid
 // <= 4 images: 2 columns (1/2 width)
 // 5 - 15 images: 5 columns (1/5 width)
@@ -320,8 +337,8 @@ const gridStyle = computed(() => {
       <NImageGroup>
         <div v-if="generatedImages.length > 0" class="image-grid" :style="gridStyle">
           <div
-            v-for="(img, index) in generatedImages"
-            :key="index"
+            v-for="img in generatedImages"
+            :key="img.path"
             class="image-wrapper"
             @contextmenu.prevent="handleContextMenu(img.path)"
           >
@@ -496,12 +513,15 @@ const gridStyle = computed(() => {
         aria-modal="true"
       >
         <div class="download-progress">
-          <div class="mb-2 flex justify-between text-xs text-gray-500">
+          <div class="download-info">
             <span>{{ t('common.downloadStatus', {
               file: downloadProgress.file,
               current: downloadProgress.currentFileIndex,
               total: downloadProgress.totalFiles,
             }) }}</span>
+            <span v-if="downloadProgress.totalBytes > 0" class="download-size">
+              {{ formatBytes(downloadProgress.downloadedBytes) }} / {{ formatBytes(downloadProgress.totalBytes) }}
+            </span>
           </div>
           <NProgress
             type="line"
@@ -807,6 +827,23 @@ $radius-sm: 12px;
 
   .zoo-actions {
     margin-left: 16px;
+  }
+}
+
+.download-progress {
+  .download-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .download-size {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #333;
   }
 }
 </style>

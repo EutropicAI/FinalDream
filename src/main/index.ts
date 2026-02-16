@@ -129,8 +129,11 @@ function setTray(): void {
   tray.setContextMenu(contextMenu)
 }
 
-// disable hardware acceleration for Compatibility for windows
-app.disableHardwareAcceleration()
+// Only disable hardware acceleration on Windows for compatibility
+// macOS and Linux benefit significantly from GPU-accelerated rendering
+if (process.platform === 'win32') {
+  app.disableHardwareAcceleration()
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
