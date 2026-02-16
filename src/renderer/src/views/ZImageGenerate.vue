@@ -536,14 +536,7 @@ const gridStyle = computed(() => {
 </template>
 
 <style scoped lang="scss">
-/* iOS Constants */
-$glass-bg: rgba(255, 255, 255, 0.65);
-$glass-border: 1px solid rgba(255, 255, 255, 0.4);
-$glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-$blur: blur(20px);
-$radius-lg: 24px;
-$radius-md: 16px;
-$radius-sm: 12px;
+/* iOS Constants - We use global vars defined in ios-theme.scss */
 
 .ios-container {
   width: 100%;
@@ -551,6 +544,7 @@ $radius-sm: 12px;
   display: flex;
   flex-direction: column;
   color: #1d1d1f;
+  background: transparent;
 }
 
 /* Header */
@@ -559,11 +553,12 @@ $radius-sm: 12px;
   padding: 0 24px;
   display: flex;
   align-items: center;
-  /* Glassmorphism */
-  background: $glass-bg;
-  backdrop-filter: $blur;
-  border-bottom: $glass-border;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  /* Liquid Glass */
+  background: var(--ios-bg-glass);
+  backdrop-filter: blur(var(--ios-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--ios-blur)) saturate(180%);
+  border-bottom: var(--ios-border);
+  box-shadow: var(--ios-shadow);
   z-index: 100;
   position: relative;
 
@@ -582,13 +577,24 @@ $radius-sm: 12px;
   max-width: 800px;
 
   :deep(.n-input) {
-    background-color: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+    /* Liquid Input */
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 50px !important;
+    color: #000;
 
     &:hover, &:focus-within {
-      background-color: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.45) !important;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 20px rgba(0,0,0,0.05);
+      border-color: rgba(255, 255, 255, 0.6) !important;
+      transform: translateY(-1px);
+    }
+
+    .n-input__placeholder {
+      color: rgba(0, 0, 0, 0.5);
     }
   }
 }
@@ -601,21 +607,38 @@ $radius-sm: 12px;
 
 .glass-button {
   color: #1d1d1f;
-  transition: transform 0.2s ease;
+  background: var(--ios-bg-glass);
+  backdrop-filter: blur(20px);
+  border: var(--ios-border);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  &:hover {
+    background: var(--ios-bg-glass-strong);
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
   &:active { transform: scale(0.95); }
 }
 
 .generate-button {
   min-width: 120px;
   font-weight: 600;
-  background-image: linear-gradient(135deg, #007AFF 0%, #00C6FF 100%);
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-  transition: all 0.3s ease;
+  font-size: 16px;
+  background-image: linear-gradient(135deg, rgba(0, 122, 255, 0.8) 0%, rgba(90, 200, 250, 0.8) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 20px -6px rgba(0, 122, 255, 0.5);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy spring */
+  color: white;
 
   &:hover {
-    box-shadow: 0 6px 16px rgba(0, 122, 255, 0.5);
-    transform: translateY(-1px);
+    box-shadow: 0 12px 28px -8px rgba(0, 122, 255, 0.8);
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.1);
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.98);
   }
 }
 
@@ -623,10 +646,9 @@ $radius-sm: 12px;
 .gallery-content {
   flex: 1;
   overflow-y: auto;
-  padding: 0; /* Remove padding to fill screen */
+  padding: 0;
   scroll-behavior: smooth;
 
-  /* Hide scrollbar but keep functionality */
   &::-webkit-scrollbar {
     width: 8px;
   }
@@ -638,38 +660,34 @@ $radius-sm: 12px;
 
 .image-grid {
   display: grid;
-  /* grid-template-columns and gap handled by dynamic style */
-  width: 100%; /* Fill full width */
+  width: 100%;
   margin: 0;
 }
 
 .image-wrapper {
   aspect-ratio: 1;
-  border-radius: 0; /* No radius */
+  border-radius: 0;
   overflow: hidden;
-  background: white;
-  box-shadow: none; /* No shadow */
+  background: transparent; /* Transparent to show background if needed, usually covered by image */
+  box-shadow: none;
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
-
-  /* Ensure content fills the wrapper */
   display: flex;
-  border: 0.5px solid rgba(0,0,0,0.05); /* Subtle separator */
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
 
   &:hover {
     z-index: 1;
     filter: brightness(1.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
   }
 
-  /* Target the NImage component root */
   .gallery-image {
     width: 100%;
     height: 100%;
-    display: flex; /* Removes inline-block spacing */
+    display: flex;
   }
 
-  /* Target the img tag inside NImage */
   :deep(img) {
     width: 100% !important;
     height: 100% !important;
@@ -687,39 +705,44 @@ $radius-sm: 12px;
 
   .empty-content {
     text-align: center;
-    background: $glass-bg;
-    backdrop-filter: $blur;
+    background: var(--ios-bg-glass);
+    backdrop-filter: blur(var(--ios-blur));
+    -webkit-backdrop-filter: blur(var(--ios-blur));
     padding: 48px;
-    border-radius: $radius-lg;
-    border: $glass-border;
-    box-shadow: $glass-shadow;
+    border-radius: var(--ios-radius-lg);
+    border: var(--ios-border);
+    box-shadow: var(--ios-shadow);
 
     .empty-icon {
       font-size: 64px;
       margin-bottom: 16px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
     }
 
     h2 {
       margin: 0 0 8px;
       font-size: 24px;
       font-weight: 700;
+      color: #1d1d1f;
     }
 
     p {
       margin: 0;
-      color: #666;
+      color: #333;
     }
   }
 }
 
 /* Settings Modal */
 .glass-modal {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(24px);
+  /* Liquid Modal */
+  background: var(--ios-bg-glass);
+  backdrop-filter: blur(var(--ios-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--ios-blur)) saturate(180%);
   padding: 32px;
-  border-radius: $radius-lg;
-  border: 1px solid rgba(255,255,255,0.5);
-  box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+  border-radius: var(--ios-radius-lg);
+  border: var(--ios-border);
+  box-shadow: 0 32px 64px rgba(0,0,0,0.15);
   width: 500px;
   max-width: 90vw;
 }
@@ -739,10 +762,11 @@ $radius-sm: 12px;
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: #666;
+    color: #444;
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
   }
 }
 
@@ -753,22 +777,36 @@ $radius-sm: 12px;
 
 .glass-input-sm, .glass-select {
   :deep(.n-input), :deep(.n-base-selection) {
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
     border-radius: 20px !important;
+    backdrop-filter: blur(10px);
+
+    &:hover, &:focus-within {
+      background-color: rgba(255, 255, 255, 0.5) !important;
+    }
   }
 }
 
 .glass-button-sm {
   border-radius: 20px !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+  }
 }
 
 .glass-drawer {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  background: var(--ios-bg-glass); /* Transparent drawer */
+  backdrop-filter: blur(var(--ios-blur));
+  -webkit-backdrop-filter: blur(var(--ios-blur));
+  border-top: var(--ios-border);
 
   :deep(.n-drawer-body-content-wrapper) {
-    overflow: hidden !important; /* Prevent drawer from scrolling */
-    padding: 0 !important; /* Remove default padding to let log fill */
+    overflow: hidden !important;
+    padding: 0 !important;
   }
 }
 
@@ -777,7 +815,7 @@ $radius-sm: 12px;
   height: 100%;
   box-sizing: border-box;
   font-family: 'Menlo', 'Monaco', monospace;
-  overflow: hidden; /* Ensure container doesn't scroll */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 
@@ -786,9 +824,9 @@ $radius-sm: 12px;
     overflow: hidden;
   }
 
-  /* Target the actual scrollable area in NLog */
   :deep(.n-log-loader) {
     border-radius: 3px;
+    background: transparent !important; /* Make log background transparent */
   }
 }
 
@@ -797,39 +835,29 @@ $radius-sm: 12px;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-radius: $radius-sm;
-  background: rgba(255,255,255,0.6);
-  margin-bottom: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-  transition: all 0.2s ease;
+  border-radius: var(--ios-radius);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 8px;
+  transition: all 0.2s;
 
-  &:last-child { margin-bottom: 0; }
   &:hover {
-    background: rgba(255,255,255,0.8);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.4);
   }
 
   .zoo-info {
-    flex: 1;
     .zoo-name {
       font-weight: 600;
-      font-size: 15px;
-      color: #333;
-      margin-bottom: 2px;
+      color: #1d1d1f;
     }
     .zoo-desc {
       font-size: 12px;
-      color: #666;
-      line-height: 1.4;
+      color: #555;
     }
-  }
-
-  .zoo-actions {
-    margin-left: 16px;
   }
 }
 
+/* Download Progress inside Modal */
 .download-progress {
   .download-info {
     display: flex;
