@@ -144,7 +144,7 @@ export async function runZImageCommand(_event: IpcMainEvent, options: ZImageOpti
       args.push('-g', `${options.gpuId}`)
     }
 
-    const current_start_args = `[Batch ${i + 1}/${count}] Executing ZImage: ${getCorePath()} ${args.join(' ')}`
+    const current_start_args = `[Batch ${i + 1}/${count}] Executing ZImage: ${getCorePath()} ${args.join(' ')} \n\n`
     console.log(current_start_args)
     _event.sender.send(IpcChannelOn.COMMAND_STDOUT, current_start_args)
 

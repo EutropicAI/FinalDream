@@ -162,8 +162,6 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    stopWatchingDirectory()
-    killZImageProcess()
     app.quit()
   }
 })
@@ -177,6 +175,8 @@ app.on('before-quit', async (event) => {
     console.log('Quitting...')
     return
   }
+  console.log('Stopping watching directory...')
+  stopWatchingDirectory()
   console.log('Killing child process before quitting...')
   event.preventDefault()
   isQuitting = true
