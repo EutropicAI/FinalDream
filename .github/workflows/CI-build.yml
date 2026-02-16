@@ -41,6 +41,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+      - name: ls dist
+        run: dir .\dist /s
+
       - name: zip-unpacked-x64
         if: matrix.os-version == 'x64'
         run: |
@@ -100,6 +103,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+      - name: ls dist
+        run: ls -R ./dist
+
       - name: zip-unpacked-x64
         if: matrix.os-version == 'x64'
         run: |
@@ -158,6 +164,9 @@ jobs:
         env:
           SKIP_DOWNLOAD_CORE: true
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: ls dist
+        run: ls -R ./dist
 
       - name: zip-unpacked
         run: |
