@@ -598,10 +598,6 @@ const gridStyle = computed(() => {
   gap: 12px;
 }
 
-
-
-
-
 /* Gallery */
 .gallery-content {
   flex: 1;
@@ -695,7 +691,6 @@ const gridStyle = computed(() => {
   }
 }
 
-
 /* Settings Modal */
 .glass-modal {
   /* Liquid Modal Layout */
@@ -704,7 +699,7 @@ const gridStyle = computed(() => {
   border-radius: var(--ios-radius-lg);
   width: 500px;
   max-width: 90vw;
-  
+
   /* Ensure no default background from parents leaks in if they are somehow white */
   :deep(.n-card), :deep(.n-modal-body-wrapper) {
       background: transparent !important;
@@ -755,10 +750,6 @@ const gridStyle = computed(() => {
     background-color: rgba(255, 255, 255, 0.6) !important;
   }
 }
-
-
-
-
 .log-container {
   padding: 20px;
   height: 100%;
@@ -816,4 +807,3 @@ const gridStyle = computed(() => {
   }
 }
 </style>
-

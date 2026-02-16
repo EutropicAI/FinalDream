@@ -43,8 +43,8 @@ const themeOverrides = {
         borderColorFocus: 'rgba(255, 255, 255, 0.6)',
         textColor: 'white',
         borderRadius: '20px',
-      }
-    }
+      },
+    },
   },
   Select: {
     peers: {
@@ -151,7 +151,7 @@ provide('showLogsDrawer', showLogsDrawer)
 /* ... rest of existing global styles ... */
 
   /* Strong blur for liquid effect */
-  --ios-blur: 40px; 
+  --ios-blur: 40px;
   /* Much clearer glass (lower opacity) */
   --ios-bg-glass: rgba(255, 255, 255, 0.25);
   --ios-bg-glass-strong: rgba(255, 255, 255, 0.45);
@@ -160,7 +160,7 @@ provide('showLogsDrawer', showLogsDrawer)
   --ios-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
   /* Slightly more visible border for definition */
   --ios-border: 1px solid rgba(255, 255, 255, 0.3);
-  
+
   --ios-font-family:
     "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
@@ -194,7 +194,7 @@ body {
   border-radius: var(--ios-radius-lg);
   padding: 20px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
@@ -226,7 +226,7 @@ body {
   backdrop-filter: blur(20px);
   border: var(--ios-border);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
+
   &:hover {
     background: var(--ios-bg-glass-strong);
     transform: scale(1.05);
@@ -254,7 +254,6 @@ body {
   }
 }
 
-
 .glass-list-item {
   display: flex;
   align-items: center;
@@ -263,7 +262,7 @@ body {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.4);
   }
