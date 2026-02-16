@@ -12,6 +12,7 @@ export const useZImageStore = defineStore(
     const prompt = ref('')
     const negativePrompt = ref('')
     const outputFolder = ref('')
+    const modelFolder = ref('')
     const selectedModel = ref('')
     const width = ref(1024)
     const height = ref(1024)
@@ -41,12 +42,58 @@ export const useZImageStore = defineStore(
       // Future models can be added here
     ])
 
-    const fetchModels = async (): Promise<void> => {
+    const checkModel = async (modelName = 'z-image-turbo'): Promise<boolean> => {
+      console.log(`[Store] Checking model status for: ${modelName}`)
+
       try {
-        availableModels.value = await ipcRenderer.invoke(IpcChannelInvoke.ZIMAGE_GET_MODELS)
+        // Pass modelFolder if available
+        const result = await ipcRenderer.invoke(IpcChannelInvoke.CHECK_MODEL_STATUS, modelName, false, modelFolder.value)
+        console.log(`[Store] Check result:`, result)
+
+        modelStatus.value[modelName] = result
+
+        // If valid, ensure it is in our available list
+        if (!result.valid && selectedModel.value === modelName) {
+          selectedModel.value = ''
+        }
+
+        return result.valid
       }
-      catch (error) {
+      catch (e) {
+        console.error('Failed to check model status:', e)
+        return false
+      }
+    }
+
+    const checkAllModels = async (): Promise<void> => {
+      console.log('[Store] Checking all remote models...')
+      for (const model of remoteModels.value) {
+        await checkModel(model.id)
+      }
+    }
+
+    const fetchModels = async (): Promise<void> => {
+      // Require model folder
+      if (!modelFolder.value) {
+        availableModels.value = []
+        selectedModel.value = ''
+        return
+      }
+
+      try {
+        // Pass modelFolder if set
+        availableModels.value = await ipcRenderer.invoke(IpcChannelInvoke.ZIMAGE_GET_MODELS, modelFolder.value)
+      }
+      catch (error: any) {
         console.error('Failed to fetch models:', error)
+        availableModels.value = []
+        selectedModel.value = ''
+
+        // If directory is missing/invalid, reset modelFolder
+        if (error.message?.includes('DIRECTORY_NOT_FOUND') || error.toString().includes('DIRECTORY_NOT_FOUND')) {
+          console.warn('Model directory not found, resetting...')
+          modelFolder.value = ''
+        }
       }
     }
 
@@ -57,12 +104,30 @@ export const useZImageStore = defineStore(
       }
     }
 
+    const selectModelFolder = async (): Promise<void> => {
+      const paths = await ipcRenderer.invoke(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, ['openDirectory'])
+      if (Array.isArray(paths) && paths.length > 0) {
+        modelFolder.value = paths[0]
+        // Refresh models with new path
+        await fetchModels()
+        await checkAllModels()
+      }
+    }
+
     const startGeneration = (callbacks?: { onError?: (code: number) => void }): { success: boolean, message?: string } => {
       // Validate output folder is set
       if (!outputFolder.value) {
         return {
           success: false,
-          message: i18n.global.t('common.selectOutputFolderFirst'),
+          message: i18n.global.t('validation.outputFolderRequired'),
+        }
+      }
+
+      // Validate model folder is set
+      if (!modelFolder.value) {
+        return {
+          success: false,
+          message: i18n.global.t('validation.modelFolderRequired'),
         }
       }
 
@@ -88,6 +153,7 @@ export const useZImageStore = defineStore(
         model: selectedModel.value,
         gpuId: gpuId.value,
         count: count.value,
+        modelDir: modelFolder.value,
       }
 
       // Listeners
@@ -138,50 +204,9 @@ export const useZImageStore = defineStore(
       }
     })
 
-    const checkModel = async (modelName = 'z-image-turbo'): Promise<boolean> => {
-      console.log(`[Store] Checking model status for: ${modelName}`)
-
-      try {
-        const result = await ipcRenderer.invoke(IpcChannelInvoke.CHECK_MODEL_STATUS, modelName)
-        console.log(`[Store] Check result:`, result)
-
-        modelStatus.value[modelName] = result
-
-        // If valid, ensure it is in our available list
-        if (result.valid) {
-          if (!availableModels.value.includes(modelName)) {
-            console.log(`[Store] Model valid but not in list. Adding ${modelName}...`)
-            availableModels.value.push(modelName)
-            // Force reactivity if needed (though push should work)
-            availableModels.value = [...availableModels.value]
-          }
-          else {
-            console.log(`[Store] Model valid and already in list.`)
-          }
-        }
-        else {
-          console.log(`[Store] Model invalid.`)
-        }
-
-        return result.valid
-      }
-      catch (e) {
-        console.error('Failed to check model status:', e)
-        return false
-      }
-    }
-
-    const checkAllModels = async (): Promise<void> => {
-      console.log('[Store] Checking all remote models...')
-      for (const model of remoteModels.value) {
-        await checkModel(model.id)
-      }
-    }
-
     const downloadModel = async (modelName = 'z-image-turbo'): Promise<void> => {
       isDownloadingModel.value[modelName] = true
 
-      // Listen for progress
       // Listen for progress
       const onProgress = (_event: any, data: ZImageModelDownloadProgress): void => {
         downloadProgress.value = data
@@ -189,10 +214,9 @@ export const useZImageStore = defineStore(
       ipcRenderer.on(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, onProgress)
 
       try {
-        // Pass missingFiles if available to optimize?
-        // For now, let main process handle logic (it re-checks)
         const missing = modelStatus.value[modelName]?.missingFiles || []
-        const result = await ipcRenderer.invoke(IpcChannelInvoke.DOWNLOAD_MODEL, modelName, [...missing])
+        // Pass modelFolder if available
+        const result = await ipcRenderer.invoke(IpcChannelInvoke.DOWNLOAD_MODEL, modelName, [...missing], modelFolder.value)
         if (result.success) {
           // Update status
           modelStatus.value[modelName] = { valid: true, missingFiles: [] }
@@ -260,6 +284,7 @@ export const useZImageStore = defineStore(
       prompt,
       negativePrompt,
       outputFolder,
+      modelFolder,
       selectedModel,
       width,
       height,
@@ -274,6 +299,7 @@ export const useZImageStore = defineStore(
       generatedImages,
       fetchModels,
       selectOutputFolder,
+      selectModelFolder,
       startGeneration,
       stopGeneration,
       addGeneratedImage,
@@ -293,6 +319,7 @@ export const useZImageStore = defineStore(
         'prompt',
         'negativePrompt',
         'outputFolder',
+        'modelFolder',
         'selectedModel',
         'width',
         'height',

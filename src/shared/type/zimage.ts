@@ -9,6 +9,7 @@ export interface ZImageOptions {
   model?: string
   gpuId?: number | 'auto'
   count?: number
+  modelDir: string
 }
 
 export interface ZImageModelDownloadProgress {

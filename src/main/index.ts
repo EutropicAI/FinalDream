@@ -1,10 +1,11 @@
 import { join } from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { IpcChannelInvoke, IpcChannelSend } from '@shared/const/ipc'
-import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
 import appIcon from '../../resources/icon.png?asset'
 import trayIcon from '../../resources/tray.png?asset'
 import { startWatchingDirectory, stopWatchingDirectory } from './fileWatcher'
+import { copyImage } from './imageUtils'
 import { checkModelStatus, downloadModels } from './modelManager'
 import { openDirectory } from './openDirectory'
 import { getZImageModels, killZImageProcess, runZImageCommand } from './zimage'
@@ -46,29 +47,13 @@ function createWindow(): void {
   ipcMain.handle(IpcChannelInvoke.DOWNLOAD_MODEL, downloadModels)
 
   // File watcher handlers
-  ipcMain.handle(IpcChannelInvoke.START_WATCHING_DIRECTORY, (_event, dirPath: string) => {
-    const currentMainWindow = BrowserWindow.getAllWindows()[0]
-    if (currentMainWindow) {
-      startWatchingDirectory(dirPath, currentMainWindow)
-    }
-  })
+  ipcMain.handle(IpcChannelInvoke.START_WATCHING_DIRECTORY, startWatchingDirectory)
+  ipcMain.handle(IpcChannelInvoke.STOP_WATCHING_DIRECTORY, stopWatchingDirectory)
 
-  ipcMain.handle(IpcChannelInvoke.STOP_WATCHING_DIRECTORY, () => {
-    stopWatchingDirectory()
-  })
+  // Clipboard handlers
+  ipcMain.handle(IpcChannelInvoke.COPY_IMAGE, copyImage)
 
-  ipcMain.handle(IpcChannelInvoke.COPY_IMAGE, async (_event, imagePath: string) => {
-    try {
-      const image = nativeImage.createFromPath(imagePath)
-      clipboard.writeImage(image)
-      return { success: true }
-    }
-    catch (error) {
-      console.error('Failed to copy image:', error)
-      return { success: false, error: String(error) }
-    }
-  })
-
+  // Window handlers
   ipcMain.on(IpcChannelSend.MINIMIZE, () => {
     mainWindow.minimize()
   })

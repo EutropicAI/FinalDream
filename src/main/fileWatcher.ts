@@ -1,4 +1,4 @@
-import type { BrowserWindow } from 'electron'
+import type { IpcMainInvokeEvent } from 'electron'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { IpcChannelOn } from '@shared/const/ipc'
@@ -6,6 +6,7 @@ import { IpcChannelOn } from '@shared/const/ipc'
 let watcher: fs.FSWatcher | null = null
 let watchedDirectory: string | null = null
 let debounceTimer: NodeJS.Timeout | null = null
+// Store the sender to send updates back to the renderer
 const detectedFiles = new Set<string>()
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.gif']
@@ -16,8 +17,8 @@ function isImageFile(filename: string): boolean {
 }
 
 export function startWatchingDirectory(
+  _event: IpcMainInvokeEvent,
   dirPath: string,
-  mainWindow: BrowserWindow,
 ): void {
   // Stop any existing watcher
   stopWatchingDirectory()
@@ -58,10 +59,12 @@ export function startWatchingDirectory(
     if (fileStats.length > 0) {
       console.log(`Sending ${fileStats.length} existing images to frontend`)
       fileStats.forEach((item) => {
-        mainWindow.webContents.send(IpcChannelOn.NEW_IMAGE_DETECTED, {
-          path: item.path,
-          mtime: item.mtime,
-        })
+        if (!_event.sender.isDestroyed()) {
+          _event.sender.send(IpcChannelOn.NEW_IMAGE_DETECTED, {
+            path: item.path,
+            mtime: item.mtime,
+          })
+        }
       })
     }
   }
@@ -97,10 +100,12 @@ export function startWatchingDirectory(
             const stats = fs.statSync(pendingPath)
             detectedFiles.add(pendingPath)
             console.log(`New image detected: ${pendingPath}`)
-            mainWindow.webContents.send(IpcChannelOn.NEW_IMAGE_DETECTED, {
-              path: pendingPath,
-              mtime: stats.mtimeMs,
-            })
+            if (!_event.sender.isDestroyed()) {
+              _event.sender.send(IpcChannelOn.NEW_IMAGE_DETECTED, {
+                path: pendingPath,
+                mtime: stats.mtimeMs,
+              })
+            }
           }
           catch (e) {
             console.error(`Error processing new file ${pendingPath}:`, e)
@@ -111,7 +116,9 @@ export function startWatchingDirectory(
           try {
             detectedFiles.delete(pendingPath)
             console.log(`Image removed: ${pendingPath}`)
-            mainWindow.webContents.send(IpcChannelOn.IMAGE_REMOVED, pendingPath)
+            if (!_event.sender.isDestroyed()) {
+              _event.sender.send(IpcChannelOn.IMAGE_REMOVED, pendingPath)
+            }
           }
           catch (e) {
             console.error(`Error processing removed file ${pendingPath}:`, e)
@@ -128,7 +135,7 @@ export function startWatchingDirectory(
   })
 }
 
-export function stopWatchingDirectory(): void {
+export function stopWatchingDirectory(_event?: IpcMainInvokeEvent): void {
   if (watcher) {
     watcher.close()
     watcher = null

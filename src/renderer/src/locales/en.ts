@@ -26,6 +26,7 @@ export const en = {
     title: 'Settings',
     language: 'Language',
     model: 'Model',
+    modelFolder: 'Model Folder',
     outputFolder: 'Output Folder',
     width: 'Width',
     height: 'Height',
@@ -41,5 +42,10 @@ export const en = {
   placeholder: {
     prompt: 'Describe your dream...',
     negativePrompt: 'Describe what to exclude...',
+    selectModelFolder: 'Select Model Folder...',
+  },
+  validation: {
+    modelFolderRequired: 'Please select a model folder in settings.',
+    outputFolderRequired: 'Please select an output folder in settings.',
   },
 }

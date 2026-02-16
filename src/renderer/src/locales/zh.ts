@@ -26,6 +26,7 @@ export const zh = {
     title: '设置',
     language: '语言',
     model: '模型',
+    modelFolder: '模型目录',
     outputFolder: '输出目录',
     width: '宽度',
     height: '高度',
@@ -41,5 +42,10 @@ export const zh = {
   placeholder: {
     prompt: '描述你的梦境...',
     negativePrompt: '描述你想排除的内容...',
+    selectModelFolder: '选择模型目录',
+  },
+  validation: {
+    modelFolderRequired: '请在设置中选择模型目录。',
+    outputFolderRequired: '请在设置中选择输出目录。',
   },
 }

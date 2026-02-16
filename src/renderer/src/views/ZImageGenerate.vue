@@ -45,8 +45,9 @@ const {
   modelStatus,
   isDownloadingModel,
   downloadProgress,
+  modelFolder,
 } = storeToRefs(zImageStore)
-const { fetchModels, startGeneration, stopGeneration, selectOutputFolder, checkModel, checkAllModels, downloadModel } = zImageStore
+const { fetchModels, startGeneration, stopGeneration, selectOutputFolder, checkModel, checkAllModels, downloadModel, selectModelFolder } = zImageStore
 
 const message = useMessage()
 const { ipcRenderer } = window.electron
@@ -110,12 +111,32 @@ watch(logs, async () => {
 })
 
 // Actions
+// Validation
+const canGenerate = computed(() => {
+  if (isGenerating.value)
+    return true // Allow stopping
+  return !!modelFolder.value && !!outputFolder.value
+})
+
+const validationMessage = computed(() => {
+  if (!modelFolder.value)
+    return t('validation.modelFolderRequired')
+  if (!outputFolder.value)
+    return t('validation.outputFolderRequired')
+  return ''
+})
+
 function handleGenerate(): void {
   if (!prompt.value)
     return
 
   if (isGenerating.value) {
     stopGeneration()
+    return
+  }
+
+  if (!canGenerate.value) {
+    message.warning(validationMessage.value)
     return
   }
 
@@ -253,20 +274,21 @@ const gridStyle = computed(() => {
 
         <!-- Actions -->
         <div class="actions-container">
-          <NButton
-            v-if="!isGenerating"
-            type="primary"
-            round
-            size="large"
-            class="generate-button"
-            :disabled="!prompt"
-            @click="handleGenerate"
-          >
-            <template #icon>
-              <NIcon><PlayOutline /></NIcon>
-            </template>
-            {{ t('common.generate') }}
-          </NButton>
+          <div v-if="!isGenerating" class="generate-btn-wrapper">
+            <NButton
+              type="primary"
+              round
+              size="large"
+              class="generate-button"
+              :disabled="!prompt"
+              @click="handleGenerate"
+            >
+              <template #icon>
+                <NIcon><PlayOutline /></NIcon>
+              </template>
+              {{ t('common.generate') }}
+            </NButton>
+          </div>
 
           <NButton
             v-else
@@ -335,6 +357,19 @@ const gridStyle = computed(() => {
     <NModal v-model:show="showSettings">
       <div class="settings-card glass-modal">
         <div class="settings-grid">
+          <!-- Model Folder -->
+          <div class="setting-item full-width">
+            <label>{{ t('settings.modelFolder') }}</label>
+            <div class="folder-input">
+              <NInput v-model:value="modelFolder" readonly class="glass-input-sm" :placeholder="t('placeholder.selectModelFolder')" />
+              <NButton class="glass-button-sm" @click="selectModelFolder">
+                <template #icon>
+                  <NIcon><FolderOpenOutline /></NIcon>
+                </template>
+              </NButton>
+            </div>
+          </div>
+
           <!-- Output -->
           <div class="setting-item full-width">
             <label>{{ t('settings.outputFolder') }}</label>

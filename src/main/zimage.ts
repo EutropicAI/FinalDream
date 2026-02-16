@@ -1,5 +1,5 @@
 import type { ZImageOptions } from '@shared/type/zimage'
-import type { IpcMainEvent } from 'electron'
+import type { IpcMainEvent, IpcMainInvokeEvent } from 'electron'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -8,16 +8,23 @@ import { join, normalize } from 'node:path'
 
 import { IpcChannelOn } from '@shared/const/ipc'
 
-import { getCorePath, getModelDir } from './getPath'
+import { getCorePath } from './getPath'
 import { PRESET_MODELS } from './modelManager'
 
 let zImageChild: ChildProcessWithoutNullStreams | null = null
 let isBatchStopped = false
 
-export async function getZImageModels(): Promise<string[]> {
+export async function getZImageModels(_event: IpcMainInvokeEvent, customModelDir?: string): Promise<string[]> {
   const corePath = getCorePath()
   const executableDir = join(corePath, '..') // .../FinalDream-core
-  const modelsDir = join(executableDir, '..', 'models') // .../models
+
+  // Validation for custom dir
+  if (customModelDir && !existsSync(customModelDir)) {
+    throw new Error('DIRECTORY_NOT_FOUND')
+  }
+
+  // Use custom dir or default
+  const modelsDir = customModelDir || join(executableDir, '..', 'models') // .../models
 
   try {
     const entries = await readdir(modelsDir, { withFileTypes: true })
@@ -57,18 +64,18 @@ export async function getZImageModels(): Promise<string[]> {
   }
 }
 
-async function runSingleZImage(event: IpcMainEvent, args: string[], executablePath: string): Promise<number> {
+async function runSingleZImage(_event: IpcMainEvent, args: string[], executablePath: string): Promise<number> {
   return new Promise((resolve) => {
     zImageChild = spawn(executablePath, args, {
       shell: true,
     })
 
     zImageChild.stdout.on('data', (data) => {
-      event.sender.send(IpcChannelOn.COMMAND_STDOUT, data.toString())
+      _event.sender.send(IpcChannelOn.COMMAND_STDOUT, data.toString())
     })
 
     zImageChild.stderr.on('data', (data) => {
-      event.sender.send(IpcChannelOn.COMMAND_STDERR, data.toString())
+      _event.sender.send(IpcChannelOn.COMMAND_STDERR, data.toString())
     })
 
     zImageChild.on('close', (code) => {
@@ -78,7 +85,7 @@ async function runSingleZImage(event: IpcMainEvent, args: string[], executablePa
     })
 
     zImageChild.on('error', (err) => {
-      event.sender.send(IpcChannelOn.COMMAND_STDERR, err.toString())
+      _event.sender.send(IpcChannelOn.COMMAND_STDERR, err.toString())
       console.error('Failed to start subprocess:', err)
       zImageChild = null
       resolve(-1)
@@ -86,7 +93,7 @@ async function runSingleZImage(event: IpcMainEvent, args: string[], executablePa
   })
 }
 
-export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptions): Promise<void> {
+export async function runZImageCommand(_event: IpcMainEvent, options: ZImageOptions): Promise<void> {
   isBatchStopped = false
 
   const count = options.count || 1
@@ -128,7 +135,7 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
     }
 
     if (options.model) {
-      const modelPath = join(getModelDir(), options.model)
+      const modelPath = join(options.modelDir, options.model)
       args.push('-m', normalize(modelPath))
     }
 
@@ -139,7 +146,7 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
     console.log(`[Batch ${i + 1}/${count}] Executing ZImage:`, getCorePath(), args)
 
     // Run and wait
-    await runSingleZImage(event, args, getCorePath())
+    await runSingleZImage(_event, args, getCorePath())
 
     // If stopped during execution, break
     if (isBatchStopped)
@@ -147,10 +154,10 @@ export async function runZImageCommand(event: IpcMainEvent, options: ZImageOptio
   }
 
   // Final Close Event to reset frontend state
-  event.sender.send(IpcChannelOn.COMMAND_CLOSE, 0)
+  _event.sender.send(IpcChannelOn.COMMAND_CLOSE, 0)
 }
 
-export async function killZImageProcess(): Promise<void> {
+export async function killZImageProcess(_event?: IpcMainEvent): Promise<void> {
   isBatchStopped = true
   if (zImageChild) {
     console.log('Killing ZImage process...')

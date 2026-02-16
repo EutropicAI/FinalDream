@@ -6,7 +6,7 @@ const { promisify } = require('node:util')
 const streamPipeline = promisify(require('node:stream').pipeline)
 
 // Configuration
-const VERSION = '20260214'
+const VERSION = '20260215'
 const BASE_URL = `https://github.com/nihui/zimage-ncnn-vulkan/releases/download/${VERSION}`
 
 const PLATFORMS = {

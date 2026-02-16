@@ -5,7 +5,6 @@ import { createHash } from 'node:crypto'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { IpcChannelOn } from '@shared/const/ipc'
-import { getModelDir } from './getPath'
 
 const BASE_URL = 'https://modelscope.cn/api/v1/models/Tohrusky/z-image-turbo-ncnn/repo?Revision=master&FilePath='
 
@@ -49,14 +48,26 @@ async function calculateFileHash(filePath: string): Promise<string> {
 }
 
 // Check status of all files
-export async function checkModelStatus(_, modelName = 'z-image-turbo', fastCheck = true): Promise<{ valid: boolean, missingFiles: string[] }> {
+export async function checkModelStatus(
+  _event: IpcMainInvokeEvent,
+  modelName = 'z-image-turbo',
+  fastCheck = true,
+  customModelDir?: string,
+): Promise<{ valid: boolean, missingFiles: string[] }> {
   // Ensure model exists in presets
   const requiredFiles = PRESET_MODELS[modelName]
   if (!requiredFiles) {
     return { valid: false, missingFiles: [] }
   }
 
-  const modelDir = path.join(getModelDir(), modelName)
+  // Model dir is now required
+  if (!customModelDir) {
+    console.error('checkModelStatus: customModelDir is required')
+    return { valid: false, missingFiles: requiredFiles.map(f => f.name) }
+  }
+
+  const modelDir = path.join(customModelDir, modelName)
+
   if (!fs.existsSync(modelDir)) {
     return { valid: false, missingFiles: requiredFiles.map(f => f.name) }
   }
@@ -146,16 +157,23 @@ async function downloadFile(
 
 // Main download function exposed to IPC
 export async function downloadModels(
-  event: IpcMainInvokeEvent,
+  _event: IpcMainInvokeEvent,
   modelName = 'z-image-turbo',
   missingFiles: string[] = [],
+  customModelDir?: string,
 ): Promise<{ success: boolean, error?: string }> {
   const requiredFiles = PRESET_MODELS[modelName]
   if (!requiredFiles) {
     return { success: false, error: `Unknown model: ${modelName}` }
   }
 
-  const modelDir = path.join(getModelDir(), modelName)
+  // Model dir is now required
+  if (!customModelDir) {
+    return { success: false, error: 'Model directory is not selected.' }
+  }
+
+  const modelDir = path.join(customModelDir, modelName)
+
   if (!fs.existsSync(modelDir)) {
     fs.mkdirSync(modelDir, { recursive: true })
   }
@@ -176,7 +194,7 @@ export async function downloadModels(
         currentFileIndex: index + 1,
         totalFiles: filesToDownload.length,
       }
-      event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
+      _event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
 
       await downloadFile(file.name, modelDir, (downloaded, total) => {
         const percentage = total > 0 ? (downloaded / total) * 100 : 0
@@ -187,7 +205,7 @@ export async function downloadModels(
           currentFileIndex: index + 1,
           totalFiles: filesToDownload.length,
         }
-        event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
+        _event.sender.send(IpcChannelOn.MODEL_DOWNLOAD_PROGRESS, progressData)
       })
 
       // Verify hash immediately after download
